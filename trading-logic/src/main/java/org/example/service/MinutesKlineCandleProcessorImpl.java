@@ -17,6 +17,7 @@ import static java.time.LocalDateTime.now;
 import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
 import static org.example.model.enums.FibaLevel.*;
 import static org.example.model.enums.OrderType.LIMIT;
+import static org.example.utils.FibaHelper.calculateValueForLevel;
 import static org.example.utils.FibaHelper.getOrders;
 
 
@@ -119,22 +120,24 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
 
         if (isHourCandleOpened && isHourCandlesEmpty && isClosingHourCandle) {
             fibaCandlesData.addCandle(hourCandle);
-            Map<FibaLevel, BigDecimal> fibaLevelsValues = FibaHelper.calculateValueForLevel(hourCandle.getLow(), hourCandle.getHigh());
+            Map<FibaLevel, BigDecimal> fibaLevelsValues = calculateValueForLevel(hourCandle.getLow(), hourCandle.getHigh());
             fibaCandlesData.updateFibaPrice(fibaLevelsValues);
 
-            log.info("fiba data NO CANDLE: candle count {} fiba data {}", fibaCandlesData.getCandlesCount(), fibaCandlesData.fibaPriceLevels());
+            log.info("fiba data NO CANDLE: candle count {} fiba data {}", hourCandlesCount, fibaCandlesData.fibaPriceLevels());
         } else if (isHourCandleOpened && hourCandlesCount == 1 && isClosingHourCandle) {
+            BigDecimal low;
 
-            if (hourCandleHigh.compareTo(fibaHigh) <= 0
-                    || hourCandleLow.compareTo(fibaFive) <= 0) {
+            if (hourCandleHigh.compareTo(fibaHigh) <= 0 // hour candle didn't update the highest point
+                    || hourCandleLow.compareTo(fibaFive) <= 0) { // hour candle drop below 0.5 fiba
                 fibaCandlesData.cleanUp();
-                fibaCandlesData.addCandle(hourCandle);
-                Map<FibaLevel, BigDecimal> fibaLevelsValues = FibaHelper.calculateValueForLevel(hourCandle.getLow(), hourCandle.getHigh());
-                fibaCandlesData.updateFibaPrice(fibaLevelsValues);
+                low = hourCandle.getLow();
             } else {
-                Map<FibaLevel, BigDecimal> fibaLevelsValues = FibaHelper.calculateValueForLevel(fibaCandlesData.getLow(), hourCandle.getHigh());
-                fibaCandlesData.updateFibaPrice(fibaLevelsValues);
+                low = fibaCandlesData.getLow();
             }
+
+            // update the highest point for fiba from hour candle or set hour candle low and high for cleaned up fiba
+            fibaCandlesData.updateFibaPrice(calculateValueForLevel(low, hourCandle.getHigh()));
+            fibaCandlesData.addCandle(hourCandle);
 
             log.info("fiba data ONE CANDLE: candle count {} fiba data {}", fibaCandlesData.getCandlesCount(), fibaCandlesData.fibaPriceLevels());
         } else if (hourCandlesCount > 1) {
@@ -199,7 +202,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
     private Boolean updateFibaPriceLevelsIfNeededAndReturnTrueIfUpdated(KlineCandle candle) {
         if (candle.getHigh().compareTo(fibaCandlesData.getHigh()) > 0) {
             Map<FibaLevel, BigDecimal> fibaLevelsValues =
-                    FibaHelper.calculateValueForLevel(fibaCandlesData.getLow(), candle.getHigh());
+                    calculateValueForLevel(fibaCandlesData.getLow(), candle.getHigh());
             fibaCandlesData.updateFibaPrice(fibaLevelsValues);
             return true;
         }

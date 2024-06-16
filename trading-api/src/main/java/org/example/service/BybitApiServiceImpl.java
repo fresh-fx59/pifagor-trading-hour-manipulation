@@ -26,7 +26,7 @@ public class BybitApiServiceImpl implements ApiService {
 
 
     @Override
-    public List<MarketDataCsv> getMarketDataCsv(MarketDataRequest marketKLineRequest) throws IOException {
+    public List<MarketDataCsv> getMarketDataCsv(MarketDataRequest marketKLineRequest) {
         final List<MarketDataCsv> result = new ArrayList<>();
 
         var client = BybitApiClientFactory.newInstance().newMarketDataRestClient();
@@ -34,7 +34,7 @@ public class BybitApiServiceImpl implements ApiService {
         List<MarketDataRequest> requests = prepareRequests(marketKLineRequest);
 
         requests.forEach(request -> {
-            Object response = client.getIndexPriceLinesData(request);
+            Object response = client.getMarketLinesData(request);
             MarketData marketData;
             try {
                 marketData = convertResult(response, MarketData.class);

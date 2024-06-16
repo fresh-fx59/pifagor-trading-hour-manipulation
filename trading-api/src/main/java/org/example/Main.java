@@ -29,7 +29,7 @@ public class Main {
         MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
                 .category(CategoryType.INVERSE)
                 .symbol("BTCUSDT")
-                .marketInterval(MarketInterval.HOURLY)
+                .marketInterval(MarketInterval.ONE_MINUTE)
                 .start(start)
                 .end(end)
                 .limit(1000)
