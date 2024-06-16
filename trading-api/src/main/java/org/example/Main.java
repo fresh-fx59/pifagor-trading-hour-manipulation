@@ -23,22 +23,25 @@ public class Main {
         System.out.println("Hello world!");
         ApiService apiService = new BybitApiServiceImpl();
 
-        Long start = 1717027200000L;
+        Long start = 1717027140000L;
         Long end = 1717113540000L;
 
         MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
                 .category(CategoryType.INVERSE)
                 .symbol("BTCUSDT")
-                .marketInterval(MarketInterval.ONE_MINUTE)
+                .marketInterval(MarketInterval.HOURLY)
                 .start(start)
                 .end(end)
                 .limit(1000)
                 .build();
 
 
-//        getMarketDataCsv(apiService, marketKLineRequest);
+//        getMarketDataCsvRaw(apiService, marketKLineRequest);
 
-        getMarketData(apiService, marketKLineRequest);
+//        getMarketData(apiService, marketKLineRequest);
+
+        getMarketDataCsv(apiService, marketKLineRequest);
+
 
         System.out.println("done");
 
@@ -46,6 +49,15 @@ public class Main {
 
     public static void getMarketDataCsv(ApiService apiService, MarketDataRequest request) throws IllegalAccessException, InstantiationException, IOException {
         List<MarketDataCsv> marketDataCsvs = apiService.getMarketDataCsv(request);
+
+
+        marketDataCsvs.forEach(data -> {
+            System.out.println(data.toString());
+        });
+    }
+
+    public static void getMarketDataCsvRaw(ApiService apiService, MarketDataRequest request) throws IllegalAccessException, InstantiationException, IOException {
+        List<MarketDataCsv> marketDataCsvs = apiService.getMarketDataCsvRawHttp(request);
 
 
         marketDataCsvs.forEach(data -> {

@@ -1,5 +1,6 @@
 package org.example.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,4 +15,12 @@ public class Kline implements Serializable {
     private BigDecimal closePrice;
     private String volume;
     private String turnover;
+
+    public Kline(long startTime, BigDecimal openPrice, BigDecimal highPrice, BigDecimal lowPrice, BigDecimal closePrice) {
+        this.startTime = startTime;
+        this.openPrice = openPrice;
+        this.highPrice = highPrice;
+        this.lowPrice = lowPrice;
+        this.closePrice = closePrice;
+    }
 }

@@ -24,17 +24,37 @@ import static org.example.service.ResponseConverter.*;
 @Slf4j
 public class BybitApiServiceImpl implements ApiService {
 
+
     @Override
     public List<MarketDataCsv> getMarketDataCsv(MarketDataRequest marketKLineRequest) throws IOException {
         final List<MarketDataCsv> result = new ArrayList<>();
 
-//        var client = BybitApiClientFactory.newInstance().newMarketDataRestClient();
-//        var client = BybitApiClientFactory.newInstance();
-//        var client = new BybitApiClientFactory((String)null, (String)null, "https://api.bybit.com", false, 5000L, LogOption.SLF4J.getLogOptionType(), "");;
+        var client = BybitApiClientFactory.newInstance().newMarketDataRestClient();
+
+        List<MarketDataRequest> requests = prepareRequests(marketKLineRequest);
+
+        requests.forEach(request -> {
+            Object response = client.getIndexPriceLinesData(request);
+            MarketData marketData;
+            try {
+                marketData = convertResult(response, MarketData.class);
+                marketData.getList()
+                        .forEach(kline -> result.add(new MarketDataCsv(request, kline).cutStartTime()));
+            } catch (IllegalAccessException | InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        sortByStartTime(result);
+
+        return result;
+    }
+
+    @Override
+    public List<MarketDataCsv> getMarketDataCsvRawHttp(MarketDataRequest marketKLineRequest) throws IOException {
+        final List<MarketDataCsv> result = new ArrayList<>();
 
         String targetUrl = "https://api.bybit.com/v5/market/index-price-kline";
-
-
 
         List<MarketDataRequest> requests = prepareRequests(marketKLineRequest);
 
@@ -49,11 +69,14 @@ public class BybitApiServiceImpl implements ApiService {
             }
         });
 
-        Comparator<MarketDataCsv> compareByTime = Comparator.comparing(MarketDataCsv::getStartTime);
-
-        result.sort(compareByTime);
+        sortByStartTime(result);
 
         return result;
+    }
+
+    private void sortByStartTime(List<MarketDataCsv> result) {
+        Comparator<MarketDataCsv> compareByTime = Comparator.comparing(MarketDataCsv::getStartTime);
+        result.sort(compareByTime);
     }
 
     private Map<String, String> prepareParams(MarketDataRequest request) {

@@ -33,6 +33,11 @@ public class MarketDataCsv {
         this.closePrice = kline.getClosePrice();
     }
 
+    public MarketDataCsv cutStartTime() {
+        this.startTime = this.startTime / 1000;
+        return this;
+    }
+
     public String toString() {
         return startTime + "," +
                 symbol + "," +

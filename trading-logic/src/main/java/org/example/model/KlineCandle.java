@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static java.time.LocalDateTime.now;
+
 @Data
 @AllArgsConstructor
 public class KlineCandle {
@@ -19,4 +21,14 @@ public class KlineCandle {
     private BigDecimal high;
     private BigDecimal low;
     private BigDecimal close;
+
+    public KlineCandle() {
+        this.startAt = now();
+        this.symbol = "DEFAULT";
+        this.period = "0";
+        this.open = new BigDecimal(0);
+        this.high = new BigDecimal(0);
+        this.low = new BigDecimal(0);
+        this.close = new BigDecimal(0);
+    }
 }

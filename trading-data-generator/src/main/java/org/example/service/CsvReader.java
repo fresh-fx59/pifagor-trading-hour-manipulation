@@ -25,7 +25,7 @@ public class CsvReader {
             while ((line = reader.readLine()) != null) {
                 KlineCandle candle = getCandle(line);
                 candles.add(candle);
-                log.info(candle.toString());
+                log.debug(candle.toString());
             }
             // Use the list of cars
         } catch (IOException e) {

@@ -1,6 +1,5 @@
 package org.example.utils;
 
-import lombok.NoArgsConstructor;
 import org.example.model.Order;
 import org.example.model.enums.FibaLevel;
 import org.example.model.enums.OrderSide;
@@ -9,18 +8,18 @@ import org.example.model.enums.OrderType;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class FibaActions {
+public class FibaHelper {
 
     public static Map<FibaLevel, BigDecimal> calculateValueForLevel(
             BigDecimal low, BigDecimal high
     ) {
         Map<FibaLevel, BigDecimal> result = new LinkedHashMap<>();
 
-        BigDecimal range = high.subtract(low);
+        BigDecimal range = low.subtract(high);
 
         Arrays.stream(FibaLevel.values()).forEach(
                 fibaLevel -> {
-                    BigDecimal value = low.add(range.multiply(fibaLevel.getLevel()));
+                    BigDecimal value = high.add(range.multiply(fibaLevel.getLevel()));
                     result.put(fibaLevel, value);
                 }
         );

@@ -3,6 +3,7 @@ package org.example.model;
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
 import lombok.*;
 import org.apache.commons.collections4.CollectionUtils;
+import org.example.annotation.KlineList;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class MarketData implements Serializable {
     private String symbol;
     private String category;
     private String marketInterval;
+    @KlineList
     private List<Kline> list;
 
     public MarketData(MarketDataRequest request) {

@@ -3,6 +3,8 @@ package org.example.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.example.annotation.KlineList;
+import org.example.model.Kline;
 import org.example.model.MarketDataCsv;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,7 +31,21 @@ public class ResponseConverter {
             try {
                 field = clazz.getDeclaredField(entry.getKey());
                 field.setAccessible(true);
-                field.set(pojo, entry.getValue());
+                if (field.isAnnotationPresent(KlineList.class)) {
+                    List<Object> listofKlinePresentedAsList = (ArrayList<Object>) entry.getValue();
+                    List<Kline> klines = new ArrayList<>();
+                    listofKlinePresentedAsList.forEach(rawKline -> {
+                        List<Object> listOfKlineFields = (ArrayList<Object>) rawKline;
+                                klines.add(new Kline(Long.parseLong((String) listOfKlineFields.get(0)),
+                                        new BigDecimal((String) listOfKlineFields.get(1)),
+                                        new BigDecimal((String) listOfKlineFields.get(2)),
+                                        new BigDecimal((String) listOfKlineFields.get(3)),
+                                        new BigDecimal((String) listOfKlineFields.get(4))));
+                    });
+                    field.set(pojo, klines);
+                } else {
+                    field.set(pojo, entry.getValue());
+                }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 log.error("Failed to convert", e);
             }

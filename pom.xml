@@ -25,6 +25,7 @@
         <module>trading-logic</module>
         <module>trading-api</module>
         <module>common</module>
+        <module>fibonacci-levels</module>
     </modules>
 
     <dependencies>
