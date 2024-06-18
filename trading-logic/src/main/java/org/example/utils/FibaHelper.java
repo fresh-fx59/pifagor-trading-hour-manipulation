@@ -27,17 +27,17 @@ public class FibaHelper {
         return result;
     }
 
-    public static List<Order> getOrders(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
-                                        OrderSide orderSide,
-                                        OrderType orderType,
-                                        List<FibaLevel> levelsToCreateOrder) {
-        List<Order> result = new ArrayList<>();
-
-        fibaPriceLevels.forEach((level, price) -> {
-            if (levelsToCreateOrder.contains(level))
-                result.add(new Order(orderType, price, orderSide, null));
-        });
-
-        return result;
-    }
+//    public static List<Order> getOrders(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
+//                                        OrderSide orderSide,
+//                                        OrderType orderType,
+//                                        List<FibaLevel> levelsToCreateOrder) {
+//        List<Order> result = new ArrayList<>();
+//
+//        fibaPriceLevels.forEach((level, price) -> {
+//            if (levelsToCreateOrder.contains(level))
+//                result.add(new Order(orderType, price, orderSide, null));
+//        });
+//
+//        return result;
+//    }
 }

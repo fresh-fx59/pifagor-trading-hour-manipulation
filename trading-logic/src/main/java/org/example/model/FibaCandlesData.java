@@ -37,8 +37,16 @@ public record FibaCandlesData(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
         return this.hourCandles.getLast();
     }
 
-    public BigDecimal getZeroFive() {
+    public BigDecimal getLevel05() {
         return this.fibaPriceLevels.get(FibaLevel.FIVE);
+    }
+
+
+    public BigDecimal getLevel0382() {
+        return this.fibaPriceLevels.get(FibaLevel.THREEEIGHTTWO);
+    }
+    public BigDecimal getLevel1() {
+        return this.fibaPriceLevels.get(FibaLevel.ONE);
     }
 
     public BigDecimal getHigh() {

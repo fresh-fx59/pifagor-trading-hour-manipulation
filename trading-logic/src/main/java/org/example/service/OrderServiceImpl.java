@@ -1,23 +1,26 @@
 package org.example.service;
 
 import org.example.model.Order;
-
-import java.util.Collection;
-import java.util.List;
+import org.example.model.enums.OrderStatus;
 
 public class OrderServiceImpl implements OrderService {
     @Override
-    public void placeOrder() {
-
+    public Order createOrder(Order order) {
+        return order;
     }
 
     @Override
-    public List<Order> placeOrders(Collection<Order> orders) {
-        return null;
+    public Order amendOrder(Order order) {
+        return order;
     }
 
     @Override
-    public void closeOrders(Collection<Order> orders) {
+    public Order cancelOrder(Order order) {
+        return order;
+    }
 
+    @Override
+    public OrderStatus getOrderStatus(Order order) {
+        return OrderStatus.FILLED;
     }
 }

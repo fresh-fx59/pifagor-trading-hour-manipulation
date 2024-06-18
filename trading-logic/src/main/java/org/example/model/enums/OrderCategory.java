@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum OrderSide {
-    SELL("Sell"),
-    BUY("Buy");
+public enum OrderCategory {
+    SPOT("Limit"),
+    LINEAR("Market"),
+    INVERSE("inverse"),
+    OPTION("option"),
+    ;
 
     private final String bybitValue;
 }
