@@ -9,9 +9,11 @@ import org.example.model.enums.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static java.time.LocalDateTime.now;
 import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
 import static org.example.model.OrdersData.*;
 import static org.example.model.enums.FibaLevel.*;
@@ -106,6 +108,8 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
         final BigDecimal ordersDataFibaLevel1 = ordersData.fibaLevelsToCompare().get(ONE);
         final BigDecimal ordersDataFibaLevel05 = ordersData.fibaLevelsToCompare().get(FIVE);
 
+        //log.info("fiba05 from candle = {}, fiba 05 from ordersData = {}", fibaLevel05, ordersData.getFiba05());
+
         if (ordersData.isNotFreezed()) {
             if (hourCandlesCount < 2 && !ordersData.getParam(ORDERS_CREATED, false)) {
                 return;
@@ -124,7 +128,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
                 updateOrdersData(createdOrdersMap, levelPrice, params);
 
                 log.info("orders created " + createdOrders);
-            } else if (fibaLevel05.compareTo(ordersData.getFiba05()) > 0) {
+            } else if (ordersDataFibaLevel05 != null && fibaLevel05.compareTo(ordersDataFibaLevel05) > 0) {
                 Map<FibaLevel, BigDecimal> levelPrice = Map.of(
                         THREEEIGHTTWO, fibaLevel0382,
                         FIVE, fibaLevel05,
@@ -135,8 +139,11 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
                 List<Order> amendedOrders = orderService.amendOrders(ordersToAmend.values());
 
                 log.info("orders amended " + amendedOrders);
-            } else if (candle.getLow().compareTo(ordersDataFibaLevel05) <= 0) {
+            } else if (ordersDataFibaLevel05 != null &&  candle.getLow().compareTo(ordersDataFibaLevel05) <= 0) {
                 ordersData.updateParams(Map.of(OrdersDataParams.FREEZED, true));
+                Order shouldBeFilledOrder = ordersData.levelOrder().get(FIVE);
+                log.info("order filled {} pnl = {}", shouldBeFilledOrder.getCustomOrderId(),
+                        updateBalance(shouldBeFilledOrder));
                 log.info("orders freezed. candle low = {}, fibaLevel05 = {}", candle.getLow(), ordersDataFibaLevel05);
             }
         } else {
@@ -157,7 +164,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
             log.error("Order ID {} status = {}, but should be Filled",
                     shouldBeFilledOrder.getOrderId(), orderStatus.getBybitStatus());
         }
-        log.info("order {} filled. pnl = {}", shouldBeFilledOrder, updateBalance(shouldBeFilledOrder));
+        log.info("order filled {} pnl = {}", shouldBeFilledOrder.getCustomOrderId(), updateBalance(shouldBeFilledOrder));
     }
 
     private BigDecimal updateBalance(Order order) {

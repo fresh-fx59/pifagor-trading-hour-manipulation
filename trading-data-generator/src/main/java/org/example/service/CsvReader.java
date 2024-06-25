@@ -27,9 +27,8 @@ public class CsvReader {
                 candles.add(candle);
                 log.debug(candle.toString());
             }
-            // Use the list of cars
         } catch (IOException e) {
-            log.error("Something whent wrong while processing csv file " + filename,
+            log.error("Something went wrong while processing csv file " + filename,
                     e.fillInStackTrace());
         }
 

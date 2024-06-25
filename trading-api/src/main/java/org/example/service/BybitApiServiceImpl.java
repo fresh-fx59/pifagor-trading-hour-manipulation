@@ -1,29 +1,48 @@
 package org.example.service;
 
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
-import com.bybit.api.client.log.LogOption;
 import com.bybit.api.client.service.BybitApiClientFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.example.model.Kline;
+import org.example.model.KlineCandle;
 import org.example.model.MarketData;
 import org.example.model.MarketDataCsv;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.*;
 
-import static org.example.service.HttpService.executeMethod;
 import static org.example.service.HttpService.getResponse;
-import static org.example.service.ResponseConverter.*;
+import static org.example.service.ResponseConverter.convertResult;
+import static org.example.service.ResponseConverter.convertStringToList;
 
 @Slf4j
 public class BybitApiServiceImpl implements ApiService {
 
+    @Override
+    public List<KlineCandle> getMarketDataKline(MarketDataRequest marketKLineRequest) {
+        List<KlineCandle> candles = new ArrayList<>();
+
+        var client = BybitApiClientFactory.newInstance().newMarketDataRestClient();
+
+        List<MarketDataRequest> requests = prepareRequests(marketKLineRequest);
+
+        requests.forEach(request -> {
+            Object response = client.getMarketLinesData(request);
+            MarketData marketData;
+            try {
+                marketData = convertResult(response, MarketData.class);
+                marketData.getList()
+                        .forEach(kline ->
+                                candles.add(new KlineCandle(kline, marketKLineRequest)));
+            } catch (IllegalAccessException | InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        Comparator<KlineCandle> sortByStartinAt = Comparator.comparing(KlineCandle::getStartAt);
+        candles.sort(sortByStartinAt);
+
+        return candles;
+    }
 
     @Override
     public List<MarketDataCsv> getMarketDataCsv(MarketDataRequest marketKLineRequest) {
@@ -113,6 +132,11 @@ public class BybitApiServiceImpl implements ApiService {
         return result[0];
     }
 
+    /**
+     * Split base request in batches and return list of requests
+     * @param baseRequest to be splitted if necessary
+     * @return requests to be processed
+     */
     private List<MarketDataRequest> prepareRequests(MarketDataRequest baseRequest) {
         List<MarketDataRequest> result = new ArrayList<>();
         int limit = baseRequest.getLimit();

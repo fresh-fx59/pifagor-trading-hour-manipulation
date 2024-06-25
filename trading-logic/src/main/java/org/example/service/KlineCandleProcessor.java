@@ -1,5 +1,6 @@
 package org.example.service;
 
+
 import org.example.model.KlineCandle;
 
 public interface KlineCandleProcessor {

@@ -1,29 +1,49 @@
 package org.example;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.bybit.api.client.domain.CategoryType;
+import com.bybit.api.client.domain.market.MarketInterval;
+import com.bybit.api.client.domain.market.request.MarketDataRequest;
 import org.example.model.KlineCandle;
-import org.example.service.CsvReader;
-import org.example.service.KlineCandleProcessor;
-import org.example.service.MinutesKlineCandleProcessorImpl;
+import org.example.service.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world!");
-
-        String filename = "trading-data-generator/src/main/resources/api/BTCUSDT-2024-05-30-api-minute-index-price.csv";
-
         KlineCandleProcessor candleProcessor = new MinutesKlineCandleProcessorImpl();
 
-        CsvReader csvReader = new CsvReader();
-        List<KlineCandle> candlesToProcess = csvReader.getCandlesFromFile(filename);
+        List<KlineCandle> candlesToProcess = new ArrayList<>();
+
+        //candlesToProcess.addAll(processCandlesFromFile("trading-data-generator/src/main/resources/api/BTCUSDT-2024-05-30-api-minute-index-price.csv");
+        //candlesToProcess.addAll(getCandlesFromApi(1717027140000L, 1717113540000L)); //30th of may
+        candlesToProcess.addAll(getCandlesFromApi(1714510800000L, 1717189140000L)); //1 - 31 of may
+        //candlesToProcess.addAll(getCandlesFromApi(1714510800000L, 1714683540000L)); //1 - 2 of may
+
+
 
         candlesToProcess.forEach(candleProcessor::processCandleData);
 
-        final ObjectMapper MAPPER = new ObjectMapper();
-        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
+    private static List<KlineCandle> getCandlesFromApi(Long start, Long end) {
+        MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
+                .category(CategoryType.INVERSE)
+                .symbol("BTCUSDT")
+                .marketInterval(MarketInterval.ONE_MINUTE)
+                .start(start)
+                .end(end)
+                .limit(1000)
+                .build();
+        ApiService bybitApiService = new BybitApiServiceImpl();
+
+        return bybitApiService.getMarketDataKline(marketKLineRequest);
+
+    }
+
+    private static List<KlineCandle> getCandlesFromCsv(String filename) {
+        CsvReader csvReader = new CsvReader();
+        return csvReader.getCandlesFromFile(filename);
     }
 }
