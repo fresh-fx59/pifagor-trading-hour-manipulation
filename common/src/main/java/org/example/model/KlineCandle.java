@@ -15,10 +15,9 @@ import static java.time.ZoneOffset.UTC;
 @Data
 @AllArgsConstructor
 public class KlineCandle {
-    private LocalDateTime startAt;
+    private LocalDateTime openAt;
     // example BTCUSDT
     private String symbol;
-    // see
     private String period;
     private BigDecimal open;
     private BigDecimal high;
@@ -26,7 +25,7 @@ public class KlineCandle {
     private BigDecimal close;
 
     public KlineCandle(Kline kline, MarketDataRequest request) {
-        this.startAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(kline.getStartTime()), ZoneId.of(UTC.getId()));
+        this.openAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(kline.getStartTime()), ZoneId.of(UTC.getId()));
         this.symbol = request.getSymbol();
         this.period = request.getMarketInterval().getIntervalId();
         this.open = kline.getOpenPrice();
@@ -36,7 +35,7 @@ public class KlineCandle {
     }
 
     public KlineCandle() {
-        this.startAt = now();
+        this.openAt = now();
         this.symbol = "DEFAULT";
         this.period = "0";
         this.open = new BigDecimal(0);

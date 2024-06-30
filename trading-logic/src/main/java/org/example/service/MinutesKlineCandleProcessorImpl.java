@@ -99,7 +99,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
     private void updateOrders(KlineCandle candle) {
         final String symbol = "BTCUSDT";
         final int hourCandlesCount = fibaCandlesData.getCandlesCount();
-        final LocalDateTime candlesTime = candle.getStartAt();
+        final LocalDateTime candlesTime = candle.getOpenAt();
         final BigDecimal fibaLevel05 = fibaCandlesData.getLevel05();
         final BigDecimal fibaLevel0382 = fibaCandlesData.getLevel0382();
         final BigDecimal fibaLevel1 = fibaCandlesData.getLevel1();
@@ -246,7 +246,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
     }
 
     private void enrichHourCandle(KlineCandle candle) {
-        LocalDateTime candlesTime = candle.getStartAt();
+        LocalDateTime candlesTime = candle.getOpenAt();
         if (isFirstMinuteOfHour(candlesTime)){
             openHourCandle(candle);
         } else if (isLastMinuteOfHour(candlesTime)) {
@@ -300,7 +300,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
      *        - YES clean up fiba
      */
     private void updateFiba(KlineCandle candle) {
-        final LocalDateTime candlesTime = candle.getStartAt();
+        final LocalDateTime candlesTime = candle.getOpenAt();
         final boolean isHourCandleOpened = (hourCandle.getOpen().compareTo(new BigDecimal(0)) > 0);
         final int hourCandlesCount = fibaCandlesData.getCandlesCount();
         final boolean isHourCandlesEmpty = hourCandlesCount == 0;

@@ -26,6 +26,8 @@
         <module>trading-api</module>
         <module>common</module>
         <module>fibonacci-levels</module>
+        <module>clickhouse-flyway</module>
+        <module>trading-app</module>
     </modules>
 
     <dependencies>

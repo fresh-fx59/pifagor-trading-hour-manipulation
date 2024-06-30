@@ -1,0 +1,33 @@
+<clickhouse>
+    <users>
+        <!-- Default user configuration -->
+        <default>
+            <password></password>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+        </default>
+        <trading_app>
+            <profile>default</profile>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <password>strongPassword123!</password>
+            <quota>default</quota>
+        </trading_app>
+    </users>
+
+    <profiles>
+        <default>
+            <!-- Default profile settings -->
+        </default>
+    </profiles>
+
+    <quotas>
+        <default>
+            <!-- Default quota settings -->
+        </default>
+    </quotas>
+</clickhouse>

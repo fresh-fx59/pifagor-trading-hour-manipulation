@@ -18,8 +18,9 @@ public class Main {
 
         //candlesToProcess.addAll(processCandlesFromFile("trading-data-generator/src/main/resources/api/BTCUSDT-2024-05-30-api-minute-index-price.csv");
         //candlesToProcess.addAll(getCandlesFromApi(1717027140000L, 1717113540000L)); //30th of may
-        candlesToProcess.addAll(getCandlesFromApi(1714510800000L, 1717189140000L)); //1 - 31 of may
-        //candlesToProcess.addAll(getCandlesFromApi(1714510800000L, 1714683540000L)); //1 - 2 of may
+//        candlesToProcess.addAll(getCandlesFromApi(1714510800000L, 1717189140000L)); //1 - 31 of may
+//        candlesToProcess.addAll(getCandlesFromApi(1711918800000L, 1714510740000L)); //1 - 30 of april
+        candlesToProcess.addAll(getCandlesFromApi(1709240400000L, 1711918740000L)); //1 - 30 of april
 
 
 

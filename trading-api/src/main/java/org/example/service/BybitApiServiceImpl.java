@@ -38,7 +38,7 @@ public class BybitApiServiceImpl implements ApiService {
             }
         });
 
-        Comparator<KlineCandle> sortByStartinAt = Comparator.comparing(KlineCandle::getStartAt);
+        Comparator<KlineCandle> sortByStartinAt = Comparator.comparing(KlineCandle::getOpenAt);
         candles.sort(sortByStartinAt);
 
         return candles;
