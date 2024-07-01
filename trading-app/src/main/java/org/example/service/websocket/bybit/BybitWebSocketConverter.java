@@ -9,6 +9,7 @@ import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
 import org.example.model.BybitWebSocketResponse;
+import org.example.model.KlineCandle;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -19,6 +20,7 @@ import static org.example.enums.TickerInterval.getTickerIntervalFromBybitValue;
 public class BybitWebSocketConverter implements Runnable {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
+    private final BlockingQueue<KlineCandle> klineCandleQueue;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

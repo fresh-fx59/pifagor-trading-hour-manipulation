@@ -28,6 +28,7 @@
         <module>fibonacci-levels</module>
         <module>clickhouse-flyway</module>
         <module>trading-app</module>
+        <module>csv-processor</module>
     </modules>
 
     <dependencies>

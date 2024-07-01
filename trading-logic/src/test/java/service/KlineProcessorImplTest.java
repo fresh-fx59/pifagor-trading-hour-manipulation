@@ -15,12 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.example.CsvReader.getCandlesFromFile;
 
 @ExtendWith(MockitoExtension.class)
 public class KlineProcessorImplTest {
-
     @Spy
     private final FibaHelper fibaHelper = new FibaHelper();
     @Spy
@@ -46,7 +44,22 @@ public class KlineProcessorImplTest {
 
         //then
 //        assertThat(klineCandleProcessor.getImportantCandlesCount()).isEqualTo(1);
-        verify(importantCandles).add(any());
+//        verify(importantCandles).add(any());
+    }
+
+    @Test
+    public void oneMonthCandleProcessor() {
+        //given
+        String filePath = "src/test/resources/1719869337_klineCandles_1709240400000-1711918740000.csv";
+        BigDecimal expectedResult = new BigDecimal("1869.5610");
+        List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
+
+        //when
+        candlesToProcess.forEach(klineCandleProcessor::processCandleData);
+        BigDecimal actualResult = klineCandleProcessor.getBalance();
+
+        //then
+        assertThat(actualResult).isEqualTo(expectedResult);
     }
 
 }

@@ -1,4 +1,4 @@
-package org.example.service;
+package org.example;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 public class CsvReader {
 
-    public List<KlineCandle> getCandlesFromFile(String filename) {
+    public static List<KlineCandle> getCandlesFromFile(String filename) {
         List<KlineCandle> candles = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -35,11 +35,15 @@ public class CsvReader {
         return candles;
     }
 
-    private KlineCandle getCandle(String line) {
-        String[] columns = line.split(",");
+    private static KlineCandle getCandle(String line) {
+        String lineWithoutQuotes = line.replaceAll("\"", "");
+        String[] columns = lineWithoutQuotes.split(",");
         int unixTime = Integer.parseInt(columns[0]);
         Instant unixTimeInstant = Instant.ofEpochSecond(unixTime);
-        return new KlineCandle(LocalDateTime.ofInstant(unixTimeInstant, ZoneOffset.UTC), columns[1], columns[2],
+        return new KlineCandle(
+                LocalDateTime.ofInstant(unixTimeInstant, ZoneOffset.UTC),
+                columns[1],
+                columns[2],
                 new BigDecimal(columns[3]),
                 new BigDecimal(columns[4]),
                 new BigDecimal(columns[5]),

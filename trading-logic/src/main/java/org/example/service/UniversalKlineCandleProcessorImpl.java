@@ -14,6 +14,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.example.enums.TickerInterval.ONE_HOUR;
+import static org.example.enums.TickerInterval.ONE_MINUTE;
 import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
 import static org.example.model.OrdersData.*;
 import static org.example.model.enums.FibaLevel.*;
@@ -30,20 +32,18 @@ import static org.example.utils.OrderHelper.getPrice;
  *   add order processing logging
  */
 @Slf4j
-public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
+public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor {
     private final FibaCandlesData fibaCandlesData;
     private final OrdersData ordersData;
     private final OrderService orderService;
-    private KlineCandle hourCandle = new KlineCandle();
+    private KlineCandle hourCandle;
 
     private BigDecimal balance = new BigDecimal("0");
 
     private final static String orderQuantity = "0.5";
     public final static int ROUND_SIGN_QUANTITY = 3;
-    private final static String oneMinutePeriod = "1";
-    private final static String hourPeriod = "60";
 
-    public MinutesKlineCandleProcessorImpl() {
+    public UniversalKlineCandleProcessorImpl() {
         this.fibaCandlesData = new FibaCandlesData(setZeroFibaPriceLevels(), new LinkedList<>());
         this.orderService = new OrderServiceImpl();
         this.ordersData = new OrdersData(new HashMap<>(),
@@ -58,11 +58,11 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
 
     @Override
     public void processCandleData(KlineCandle candle) {
-        if (!oneMinutePeriod.equals(candle.getPeriod()))
+        if (!ONE_MINUTE.equals(candle.getTickerInterval()))
             return;
 
         if (hourCandle != null
-                && oneMinutePeriod.equals(hourCandle.getPeriod()))
+                && ONE_MINUTE.equals(candle.getTickerInterval()))
             return;
 
         enrichHourCandle(candle);
@@ -101,7 +101,7 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
      * @param candle to get data from
      */
     private void updateOrders(KlineCandle candle) {
-        final String symbol = "BTCUSDT";
+        final String symbol = candle.getTicker().getBybitValue();
         final int hourCandlesCount = fibaCandlesData.getCandlesCount();
         final LocalDateTime candlesTime = candle.getOpenAt();
         final BigDecimal fibaLevel05 = fibaCandlesData.getLevel05();
@@ -251,11 +251,11 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
 
     private void enrichHourCandle(KlineCandle candle) {
         LocalDateTime candlesTime = candle.getOpenAt();
-        if (isFirstMinuteOfHour(candlesTime)){
+        if (isFirstMinuteOfHour(candlesTime) && candle.getIsKlineClosed()){
             openHourCandle(candle);
-        } else if (isLastMinuteOfHour(candlesTime)) {
+        } else if (isLastMinuteOfHour(candlesTime) && candle.getIsKlineClosed()) {
             closeHourCandle(candle);
-        } else if (hourCandle != null) {
+        } else {
             updateHourCandle(candle);
         }
     }
@@ -269,11 +269,11 @@ public class MinutesKlineCandleProcessorImpl implements KlineCandleProcessor {
 
     private void openHourCandle(KlineCandle candle) {
         hourCandle = candle;
-        hourCandle.setPeriod(hourPeriod);
+        hourCandle.setTickerInterval(ONE_HOUR);
     }
 
     private void closeHourCandle(KlineCandle candle) {
-        if (hourCandle == null || !hourPeriod.equals(hourCandle.getPeriod()))
+        if (hourCandle == null || !ONE_HOUR.equals(hourCandle.getTickerInterval()))
             return;
 
         updateHourCandle(candle);

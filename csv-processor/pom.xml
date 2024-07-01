@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.onlinepremium.strategy.pifagor</groupId>
         <artifactId>hour-manipulation</artifactId>
@@ -11,41 +10,28 @@
     </parent>
 
     <groupId>org.example</groupId>
-    <artifactId>trading-data-generator</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>csv-processor</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <trading-logic.version>1.0-SNAPSHOT</trading-logic.version>
-        <trading-api.version>1.0-SNAPSHOT</trading-api.version>
-        <csv-processor.version>1.0-SNAPSHOT</csv-processor.version>
         <opencsv.version>5.9</opencsv.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.example</groupId>
-            <artifactId>csv-processor</artifactId>
-            <version>${csv-processor.version}</version>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
         <dependency>
-            <groupId>org.example</groupId>
-            <artifactId>trading-logic</artifactId>
-            <version>${trading-logic.version}</version>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.example</groupId>
-            <artifactId>trading-api</artifactId>
-            <version>${trading-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>RELEASE</version>
-            <scope>provided</scope>
-        </dependency>
+
     </dependencies>
 
 </project>

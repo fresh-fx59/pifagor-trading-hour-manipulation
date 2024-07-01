@@ -79,7 +79,8 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void convertWebsocketDataAndEnrichQueues() {
-        new Thread(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue)).start();
+        new Thread(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue)).start();
+
 //        new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue).run();
     }
 

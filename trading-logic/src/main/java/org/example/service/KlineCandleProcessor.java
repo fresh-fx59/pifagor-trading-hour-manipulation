@@ -3,6 +3,8 @@ package org.example.service;
 
 import org.example.model.KlineCandle;
 
+import java.math.BigDecimal;
+
 public interface KlineCandleProcessor {
 
     /**
@@ -12,5 +14,7 @@ public interface KlineCandleProcessor {
      * @param klineCandle
      */
     void processCandleData(KlineCandle klineCandle);
+
+    BigDecimal getBalance();
 
 }
