@@ -9,7 +9,7 @@ import org.example.model.KlineCandleCsvWriter;
 import org.example.service.ApiService;
 import org.example.service.BybitApiServiceImpl;
 import org.example.service.KlineCandleProcessor;
-import org.example.service.MinutesKlineCandleProcessorImpl;
+import org.example.service.KlineCandleProcessorImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class Main {
         System.out.println("Hello world!");
         String filePath = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/1719869337_klineCandles_1709240400000-1711918740000.csv";
 
-        KlineCandleProcessor candleProcessor = new MinutesKlineCandleProcessorImpl();
+        KlineCandleProcessor candleProcessor = new KlineCandleProcessorImpl();
 
         List<KlineCandle> candlesToProcess = new ArrayList<>();
 

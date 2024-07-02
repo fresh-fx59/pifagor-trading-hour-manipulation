@@ -6,7 +6,7 @@ import org.example.model.enums.OrdersDataParams;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import static org.example.service.MinutesKlineCandleProcessorImpl.ROUND_SIGN_QUANTITY;
+import static org.example.service.KlineCandleProcessorImpl.ROUND_SIGN_QUANTITY;
 import static org.example.utils.OrderHelper.getPrice;
 
 public record OrdersData(Map<FibaLevel, Order> levelOrder,

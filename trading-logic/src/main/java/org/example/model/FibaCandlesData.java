@@ -30,7 +30,7 @@ public record FibaCandlesData(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
     }
 
     public Integer getCandlesCount() {
-        return this.hourCandles.size();
+        return this.hourCandles == null ? 0 : this.hourCandles.size();
     }
 
     public KlineCandle getLastCandle() {

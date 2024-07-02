@@ -1,6 +1,7 @@
 package org.example.model;
 
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
+import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.example.enums.Ticker;
@@ -8,12 +9,9 @@ import org.example.enums.TickerInterval;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 
-import static java.time.ZoneOffset.UTC;
+import static org.example.util.TimeHelper.fromUnixToLocalDateTimeUtc;
 
 @Data
 @AllArgsConstructor
@@ -32,7 +30,7 @@ public class KlineCandle {
     private TickerInterval tickerInterval;
     private Ticker ticker;
     private LocalDateTime eventTime;
-    private ZoneOffset s;
+    //private ZoneOffset s = UTC;
 
     /**
      * This constructor is used to request data from api. For back test data population.
@@ -41,7 +39,7 @@ public class KlineCandle {
      * @param request MarketDataRequest
      */
     public KlineCandle(@NotNull Kline kline, @NotNull MarketDataRequest request) {
-        this.openAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(kline.getStartTime()), ZoneId.of(UTC.getId()));
+        this.openAt = fromUnixToLocalDateTimeUtc(kline.getStartTime());
         this.ticker = Ticker.getTickerFromBybitValue(request.getSymbol());
         this.tickerInterval = TickerInterval.getTickerIntervalFromBybitValue(request.getMarketInterval().getIntervalId());
         this.open = kline.getOpenPrice();
@@ -63,6 +61,22 @@ public class KlineCandle {
         this.high = high;
         this.low = low;
         this.close = close;
+    }
+
+    public KlineCandle(@NotNull KlineData klineData,
+                       @NotNull Ticker ticker,
+                       @NotNull TickerInterval tickerInterval
+                       ) {
+        this.ticker = ticker;
+        this.tickerInterval = tickerInterval;
+        this.openAt = fromUnixToLocalDateTimeUtc(klineData.getStart());
+        this.closeAt = fromUnixToLocalDateTimeUtc(klineData.getEnd());
+        this.open = new BigDecimal(klineData.getOpen());
+        this.high = new BigDecimal(klineData.getHigh());
+        this.low = new BigDecimal(klineData.getLow());
+        this.close = new BigDecimal(klineData.getHigh());
+        this.isKlineClosed = klineData.getConfirm();
+        this.eventTime = fromUnixToLocalDateTimeUtc(klineData.getTimestamp());
     }
 
     public String getPeriod() {

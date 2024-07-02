@@ -41,6 +41,7 @@ public class BybitWebSocketConverter implements Runnable {
                     TickerInterval tickerInterval = getTickerIntervalFromBybitValue(splittedTopic[1]);
 
                     for (KlineData klineData : queueElement.data()) {
+                        klineCandleQueue.put(new KlineCandle(klineData, ticker, tickerInterval));
                         klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval));
                     }
                 }

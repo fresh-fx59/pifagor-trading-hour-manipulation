@@ -14,13 +14,14 @@ import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
 import org.example.model.BybitWebSocketResponse;
 import org.example.model.KlineCandle;
-import org.example.service.KlineCandleProcessor;
 import org.example.service.UniversalKlineCandleProcessorImpl;
 import org.example.service.websocket.bybit.BybitDatabaseWriter;
 import org.example.service.websocket.bybit.BybitWebSocketConverter;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
 
-    private final KlineCandleProcessor klineCandleProcessor = new UniversalKlineCandleProcessorImpl();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     static {
@@ -73,24 +74,21 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void writeKlineToDb() {
-//        new Thread(new BybitDatabaseWriter(klineDataForDbQueue)).start();
-        new BybitDatabaseWriter(klineDataForDbQueue).run();
+        executorService.execute(new BybitDatabaseWriter(klineDataForDbQueue));
+        //new Thread(new BybitDatabaseWriter(klineDataForDbQueue)).start();
+//        new BybitDatabaseWriter(klineDataForDbQueue).run();
     }
 
     @Override
     public void convertWebsocketDataAndEnrichQueues() {
-        new Thread(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue)).start();
-
+        executorService.execute(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue));
+//        new Thread(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue)).start();
 //        new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue).run();
     }
 
     @Override
-    public void processCandles() throws InterruptedException {
-        while (true) {
-            if (!klineCandleQueue.isEmpty()) {
-                KlineCandle klineCandle = klineCandleQueue.take();
-                klineCandleProcessor.processCandleData(klineCandle);
-            }
-        }
+    public void processCandles() {
+        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue));
+//        new Thread(new CandleProcessor(klineCandleQueue, new UniversalKlineCandleProcessorImpl())).start();
     }
 }

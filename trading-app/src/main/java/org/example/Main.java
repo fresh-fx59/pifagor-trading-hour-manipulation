@@ -16,7 +16,7 @@ import static org.example.config.ConfigUponAppStart.configApp;
 
 @Slf4j
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         log.info("Hello world!");
         configApp();
 
@@ -30,6 +30,7 @@ public class Main {
         processFactory.subscribeToKline(Ticker.BTCUSDT, TickerInterval.ONE_MINUTE);
         processFactory.convertWebsocketDataAndEnrichQueues();
         processFactory.writeKlineToDb();
+        processFactory.processCandles();
 
         log.info("Bye.");
 
