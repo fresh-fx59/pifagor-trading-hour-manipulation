@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
-import org.example.model.BybitWebSocketResponse;
 import org.example.model.KlineCandle;
+import org.example.model.bybit.BybitWebSocketResponse;
 
 import java.util.concurrent.BlockingQueue;
 

@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.model.bybit;
 
 import java.util.List;
 

@@ -29,6 +29,7 @@
         <module>clickhouse-flyway</module>
         <module>trading-app</module>
         <module>csv-processor</module>
+        <module>bybit-data-grabber</module>
     </modules>
 
     <dependencies>

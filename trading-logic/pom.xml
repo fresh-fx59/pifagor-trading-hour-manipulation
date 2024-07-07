@@ -65,6 +65,7 @@
             <version>${common.version}</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
     <build>

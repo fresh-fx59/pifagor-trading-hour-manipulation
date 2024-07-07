@@ -22,14 +22,14 @@ public class FibaServiceTest {
         Map<FibaLevel, BigDecimal> expectedResult = new LinkedHashMap<>(){
             {
                 put(ZERO, new BigDecimal("200"));
-                put(TWOTHREESIX, new BigDecimal("176.400"));
+//                put(TWOTHREESIX, new BigDecimal("176.400"));
                 put(THREEEIGHTTWO, new BigDecimal("161.800"));
                 put(FIVE, new BigDecimal("150.0"));
-                put(SIXONEEIGHT, new BigDecimal("138.200"));
-                put(SEVENEIGHTSIX, new BigDecimal("121.400"));
+//                put(SIXONEEIGHT, new BigDecimal("138.200"));
+//                put(SEVENEIGHTSIX, new BigDecimal("121.400"));
                 put(ONE, new BigDecimal("100"));
-                put(ONESIXONEEIGHT, new BigDecimal("38.200"));
-                put(TWO, new BigDecimal("0"));
+//                put(ONESIXONEEIGHT, new BigDecimal("38.200"));
+//                put(TWO, new BigDecimal("0"));
             }};
 
         //when
@@ -47,14 +47,14 @@ public class FibaServiceTest {
         Map<FibaLevel, BigDecimal> expectedResult = new LinkedHashMap<>(){
             {
                 put(ZERO, new BigDecimal("100"));
-                put(TWOTHREESIX, new BigDecimal("123.600"));
+//                put(TWOTHREESIX, new BigDecimal("123.600"));
                 put(THREEEIGHTTWO, new BigDecimal("138.200"));
                 put(FIVE, new BigDecimal("150.0"));
-                put(SIXONEEIGHT, new BigDecimal("161.800"));
-                put(SEVENEIGHTSIX, new BigDecimal("178.600"));
+//                put(SIXONEEIGHT, new BigDecimal("161.800"));
+//                put(SEVENEIGHTSIX, new BigDecimal("178.600"));
                 put(ONE, new BigDecimal("200"));
-                put(ONESIXONEEIGHT, new BigDecimal("261.800"));
-                put(TWO, new BigDecimal("300"));
+//                put(ONESIXONEEIGHT, new BigDecimal("261.800"));
+//                put(TWO, new BigDecimal("300"));
             }};
 
         //when

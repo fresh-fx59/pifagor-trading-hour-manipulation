@@ -19,12 +19,14 @@ public record FibaEnviroment(
         BigDecimal fibaLow,
         boolean isCandleClosed,
         KlineCandle incomingCandle,
-        KlineCandle hourCandle
+        KlineCandle hourCandle,
+        OrdersData ordersData
 ) {
 
     public FibaEnviroment(KlineCandle incomingCandle,
                           KlineCandle hourCandle,
-                          FibaCandlesData fibaCandlesData) {
+                          FibaCandlesData fibaCandlesData,
+                          OrdersData ordersData) {
         this(
                 incomingCandle.getOpenAt(),
                 (hourCandle.getOpen().compareTo(new BigDecimal(0)) > 0),
@@ -39,7 +41,8 @@ public record FibaEnviroment(
                 fibaCandlesData.getLow(),
                 incomingCandle.getIsKlineClosed(),
                 incomingCandle,
-                hourCandle
+                hourCandle,
+                ordersData
         );
     }
 }

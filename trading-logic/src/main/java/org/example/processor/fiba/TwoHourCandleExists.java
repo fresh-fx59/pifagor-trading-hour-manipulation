@@ -1,0 +1,36 @@
+package org.example.processor.fiba;
+
+import lombok.extern.slf4j.Slf4j;
+import org.example.model.FibaCandlesData;
+import org.example.model.FibaEnviroment;
+
+import static org.example.utils.FibaHelper.calculateValueForLevel;
+import static org.example.utils.KlineCandleHelper.isLastMinuteOfHour;
+
+/**
+ * Case 3 there is more than 1 hour candles in fiba
+ *   1. check that there is more than one candle in fiba
+ *   2. check that candle's high is more than fiba high
+ *     a. YES update fiba levels
+ *     b. NO check if its low is lower than 0.5 fiba
+ *        - NO do nothing
+ *        - YES clean up fiba
+ */
+@Slf4j
+public class TwoHourCandleExists implements UpdateFibaProcessor {
+
+    @Override
+    public void process(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
+        if (fe.hourCandlesCount() != 2
+                || !isLastMinuteOfHour(fe.incomingCandle().getOpenAt())
+                || !fe.incomingCandle().getIsKlineClosed())
+            return;
+
+        if (fe.incomingCandleHigh().compareTo(fe.fibaHigh()) > 0) {
+            fibaCandlesData.updateFibaPrice(calculateValueForLevel(fe.fibaLow(), fe.incomingCandleHigh()));
+        } else if (fe.hourCandleLow().compareTo(fibaCandlesData.getLevel05()) <= 0) {
+            log.info("clean hour candles on second candle end {}", fe.incomingCandle());
+            fibaCandlesData.cleanUp();
+        }
+    }
+}

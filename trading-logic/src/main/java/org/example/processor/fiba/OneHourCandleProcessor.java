@@ -33,8 +33,9 @@ public class OneHourCandleProcessor implements UpdateFibaProcessor {
         fibaCandlesData.updateFibaPrice(calculateValueForLevel(low, fe.hourCandleHigh()));
         fibaCandlesData.addCandle(fe.hourCandle());
 
-        log.info("fiba data ONE CANDLE: candle count {} fiba data {}",
+        log.info("fiba data ONE CANDLE: candle count {}, current candle {}, fiba data {}",
                 fibaCandlesData.getCandlesCount(),
+                fe.incomingCandle().getOpenAt().getHour(),
                 fibaCandlesData.fibaPriceLevels());
     }
 }

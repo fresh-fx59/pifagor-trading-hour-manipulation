@@ -33,14 +33,9 @@ public record FibaCandlesData(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
         return this.hourCandles == null ? 0 : this.hourCandles.size();
     }
 
-    public KlineCandle getLastCandle() {
-        return this.hourCandles.getLast();
-    }
-
     public BigDecimal getLevel05() {
         return this.fibaPriceLevels.get(FibaLevel.FIVE);
     }
-
 
     public BigDecimal getLevel0382() {
         return this.fibaPriceLevels.get(FibaLevel.THREEEIGHTTWO);
@@ -57,6 +52,9 @@ public record FibaCandlesData(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
         return this.fibaPriceLevels.get(FibaLevel.ONE);
     }
 
+    /**
+     * Set fiba levels to sero and clear hour candles.
+     */
     public void cleanUp() {
         setZeroFibaPriceLevels(this.fibaPriceLevels);
         this.hourCandles.clear();

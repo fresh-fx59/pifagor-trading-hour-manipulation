@@ -22,6 +22,9 @@ public class NoHourCandlesProcessor implements UpdateFibaProcessor {
         Map<FibaLevel, BigDecimal> fibaLevelsValues = calculateValueForLevel(fe.hourCandleLow(), fe.hourCandleHigh());
         fibaCandlesData.updateFibaPrice(fibaLevelsValues);
 
-        log.info("fiba data NO CANDLE: candle count {} fiba data {}", fe.hourCandlesCount(), fibaCandlesData.fibaPriceLevels());
+        log.info("fiba data NO CANDLE: candle count {}, current candle {}, fiba data {}",
+                fe.hourCandlesCount(),
+                fe.incomingCandle().getOpenAt().getHour(),
+                fibaCandlesData.fibaPriceLevels());
     }
 }

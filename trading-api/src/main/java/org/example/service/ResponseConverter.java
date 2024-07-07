@@ -1,7 +1,5 @@
 package org.example.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.annotation.KlineList;
 import org.example.model.Kline;
@@ -12,13 +10,20 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class ResponseConverter {
     public static <T> T convertResult(Object object, Class<T> clazz) throws InstantiationException, IllegalAccessException {
         Map<String, Object> map = (Map<String, Object>)((Map<String, Object>) object).get("result");
-        T pojo = clazz.newInstance();
+        T pojo;
+        try {
+            pojo = clazz.getDeclaredConstructor().newInstance();
+        } catch (InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
 
         enrichPojo(map, pojo, clazz);
 
