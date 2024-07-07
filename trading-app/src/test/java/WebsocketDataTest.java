@@ -1,21 +1,15 @@
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.model.bybit.BybitWebSocketResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.example.mapper.JsonMapper.getMapper;
 
 public class WebsocketDataTest {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    static {
-        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
     @Test
     public void convertResponseToClassTest() throws JsonProcessingException {
         //given
@@ -38,7 +32,7 @@ public class WebsocketDataTest {
                 List.of(klineData), 1719667601380L, "snapshot");
 
         //when
-        BybitWebSocketResponse<KlineData> actualResponse = MAPPER.readValue(message, new TypeReference<>(){});
+        BybitWebSocketResponse<KlineData> actualResponse = getMapper().readValue(message, new TypeReference<>(){});
 
         //then
         assertThat(actualResponse).isEqualTo(expectedResponse);

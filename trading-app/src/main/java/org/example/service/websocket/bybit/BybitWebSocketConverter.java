@@ -1,8 +1,6 @@
 package org.example.service.websocket.bybit;
 
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.enums.Ticker;
@@ -21,12 +19,6 @@ public class BybitWebSocketConverter implements Runnable {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    static {
-        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     @Override
     public void run() {

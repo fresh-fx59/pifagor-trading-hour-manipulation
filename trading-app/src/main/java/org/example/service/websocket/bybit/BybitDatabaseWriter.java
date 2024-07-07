@@ -1,7 +1,5 @@
 package org.example.service.websocket.bybit;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.BybitKlineDataForStatement;
@@ -36,8 +34,6 @@ public class BybitDatabaseWriter implements Runnable {
                     isKlineClosed
                     ) VALUES (fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),?,?,?,?,?,?,?)
                     """);
-            final ObjectMapper MAPPER = new ObjectMapper();
-            MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
             while (true) {
                 if (!bybitKlineDataForStatement.isEmpty()) {

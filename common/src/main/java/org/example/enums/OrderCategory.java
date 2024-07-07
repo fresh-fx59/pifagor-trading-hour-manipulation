@@ -1,4 +1,4 @@
-package org.example.model.enums;
+package org.example.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum OrderCategory {
-    SPOT("Limit"),
-    LINEAR("Market"),
+    SPOT("spot"),
+    LINEAR("linear"),
     INVERSE("inverse"),
     OPTION("option"),
     ;

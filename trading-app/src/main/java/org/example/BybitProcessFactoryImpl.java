@@ -1,8 +1,6 @@
 package org.example;
 
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.enums.Ticker;
@@ -19,6 +17,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.example.mapper.JsonMapper.getMapper;
+
 @Slf4j
 @RequiredArgsConstructor
 public class BybitProcessFactoryImpl implements ProcessFactory {
@@ -27,11 +27,6 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BlockingQueue<KlineCandle> klineCandleQueue;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    static {
-        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     /**
      * Subscribe to websocket data from Bybit and write it to blocking queue
@@ -43,7 +38,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
      */
     @Override
     public void subscribeToKline(Ticker ticker, TickerInterval interval) {
-        new BybitWebSocketReader(ticker, interval, MAPPER, websocketQueue).run();
+        new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue).run();
     }
 
     @Override

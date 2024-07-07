@@ -54,18 +54,6 @@
             <artifactId>HikariCP</artifactId>
             <version>${HikariCP.version}</version>
         </dependency>
-        <!--https://mapstruct.org/faq/#Can-I-use-MapStruct-together-with-Project-Lombok-->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok-mapstruct-binding</artifactId>
-            <version>${lombok-mapstruct-binding.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.example</groupId>
             <artifactId>common</artifactId>
@@ -161,7 +149,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <!-- Replace this with the main class of your job -->
-                                    <mainClass>com.onlinepremium.exchange.management.rfswtd.Main</mainClass>
+                                    <mainClass>org.example.Main</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
@@ -196,7 +184,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
 
 </project>

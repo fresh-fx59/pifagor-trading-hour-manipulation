@@ -1,9 +1,10 @@
 package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.enums.Ticker;
+import org.example.enums.*;
 import org.example.model.*;
-import org.example.model.enums.*;
+import org.example.model.enums.FibaLevel;
+import org.example.model.enums.OrdersDataParams;
 import org.example.processor.fiba.MoreThanOneHourCandleExists;
 import org.example.processor.fiba.NoHourCandlesProcessor;
 import org.example.processor.fiba.OneHourCandleProcessor;
@@ -18,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
+import static org.example.enums.OrderStatus.FILLED;
 import static org.example.enums.TickerInterval.ONE_HOUR;
 import static org.example.enums.TickerInterval.ONE_MINUTE;
 import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
 import static org.example.model.OrdersData.SLTP_PREFIX;
 import static org.example.model.enums.FibaLevel.*;
-import static org.example.model.enums.OrderStatus.FILLED;
 import static org.example.model.enums.OrdersDataParams.ORDERS_CREATED;
 import static org.example.utils.KlineCandleHelper.isFirstMinuteOfHour;
 import static org.example.utils.KlineCandleHelper.isLastMinuteOfHour;
@@ -221,7 +222,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 .subtract(quantityWOThreshold.multiply(quantityThreshold, MathContext.DECIMAL32));
         return Order.builder()
                 .category(OrderCategory.LINEAR)
-                .symbol(ticker.getBybitValue())
+                .ticker(ticker)
                 .orderSide(OrderSide.BUY)
                 .type(OrderType.LIMIT)
                 .quantity(quantity.toString())

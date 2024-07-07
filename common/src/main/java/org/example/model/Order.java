@@ -4,9 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.model.enums.OrderCategory;
-import org.example.model.enums.OrderSide;
-import org.example.model.enums.OrderType;
+import org.example.enums.OrderCategory;
+import org.example.enums.OrderSide;
+import org.example.enums.OrderType;
+import org.example.enums.Ticker;
 
 /**
  * Bybit create order API <a href="https://bybit-exchange.github.io/docs/v5/order/create-order">docs</a>
@@ -17,7 +18,7 @@ import org.example.model.enums.OrderType;
 @Builder
 public class Order {
     private OrderCategory category;
-    private String symbol;
+    private Ticker ticker;
     private OrderSide orderSide;
     private OrderType type;
     private String quantity;
@@ -29,7 +30,7 @@ public class Order {
 
     public void updateOrder(Order o) {
         this.category = o.getCategory();
-        this.symbol = o.getSymbol();
+        this.ticker = o.getTicker();
         this.orderSide = o.getOrderSide();
         this.type = o.getType();
         this.quantity = o.getQuantity();
@@ -38,11 +39,5 @@ public class Order {
         this.customOrderId = o.getCustomOrderId();
         this.stopLoss = o.getStopLoss();
         this.takeProfit = o.getTakeProfit();
-    }
-
-    public void updateOderPriceTpSl(Order incomingOrder) {
-        this.price = incomingOrder.getPrice();
-        this.stopLoss = incomingOrder.getStopLoss();
-        this.takeProfit = incomingOrder.getTakeProfit();
     }
 }

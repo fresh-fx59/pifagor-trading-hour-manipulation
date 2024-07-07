@@ -1,4 +1,4 @@
-package org.example.model.enums;
+package org.example.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum OrderSide {
+    BUY("Buy"),
     SELL("Sell"),
-    BUY("Buy");
+    ;
 
     private final String bybitValue;
 }

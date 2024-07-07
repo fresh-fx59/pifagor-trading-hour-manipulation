@@ -1,26 +1,79 @@
 package org.example;
 
 import com.bybit.api.client.domain.CategoryType;
+import com.bybit.api.client.domain.market.InstrumentStatus;
 import com.bybit.api.client.domain.market.MarketInterval;
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.example.config.MyBybitApiTradeRestClient;
+import org.example.enums.OrderCategory;
+import org.example.enums.OrderSide;
+import org.example.enums.OrderType;
+import org.example.enums.Ticker;
+import org.example.model.Kline;
 import org.example.model.MarketData;
 import org.example.model.MarketDataCsv;
-import org.example.model.Kline;
+import org.example.model.Order;
 import org.example.service.ApiService;
 import org.example.service.BybitApiServiceImpl;
+import org.example.service.OrderService;
+import org.example.service.OrderServiceImpl;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.UUID;
+
+import static org.example.mapper.JsonMapper.getMapper;
 
 @Slf4j
 public class Main {
     public static void main(String[] args) throws IllegalAccessException, InstantiationException, IOException {
-        System.out.println("Hello world!");
+        log.info("trading-api started");
+
+        //showInfo();
+
+        log.info("start processing order");
+
+        OrderService orderService = new OrderServiceImpl();
+        Order order = Order.builder()
+                .category(OrderCategory.LINEAR)
+                .ticker(Ticker.BTCUSDT)
+                .orderSide(OrderSide.BUY)
+                .type(OrderType.LIMIT)
+                .quantity("0.002")
+                .price("50000.00")
+                .takeProfit("51000.00")
+                .stopLoss("49000.00")
+                .customOrderId("testOrder-" + UUID.randomUUID().toString().substring(0, 10))
+                .build();
+
+        Order createdOrder = orderService.createOrder(order);
+        createdOrder.setPrice("50001.00");
+        createdOrder.setTakeProfit("51001.00");
+        Order editedOrder = orderService.amendOrder(createdOrder);
+        orderService.cancelOrder(editedOrder);
+
+
+        log.info("trading-api end");
+    }
+
+    /**
+     * <a href="https://bybit-exchange.github.io/docs/v5/market/instrument#response-parameters">docs</a>
+     */
+    public static void showInfo() {
+        var instrumentInfoRequest = MarketDataRequest.builder()
+                .category(CategoryType.LINEAR)
+                .symbol(Ticker.BTCUSDT.getBybitValue())
+                .instrumentStatus(InstrumentStatus.TRADING)
+                .limit(500)
+                .build();
+        log.info(String.valueOf((LinkedHashMap<String, Object>) MyBybitApiTradeRestClient.getBybitApiMarketRestClient().getInstrumentsInfo(instrumentInfoRequest)));
+    }
+
+    public static void getDataFromCsv() throws IOException, IllegalAccessException, InstantiationException {
         ApiService apiService = new BybitApiServiceImpl();
 
         Long start = 1717027140000L;
@@ -41,10 +94,6 @@ public class Main {
 //        getMarketData(apiService, marketKLineRequest);
 
         getMarketDataCsv(apiService, marketKLineRequest);
-
-
-        System.out.println("done");
-
     }
 
     public static void getMarketDataCsv(ApiService apiService, MarketDataRequest request) throws IllegalAccessException, InstantiationException, IOException {
@@ -75,9 +124,6 @@ public class Main {
     }
 
     public static void cobverRawData() throws JsonProcessingException {
-        final ObjectMapper MAPPER = new ObjectMapper();
-        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
 
         String rawData = """
                 {
@@ -128,7 +174,7 @@ public class Main {
                 """;
 
 
-        List<Kline> klines = MAPPER.readValue(rawData2, new TypeReference<List<Kline>>() {});
+        List<Kline> klines = getMapper().readValue(rawData2, new TypeReference<List<Kline>>() {});
 
         System.out.println(klines);
         }
