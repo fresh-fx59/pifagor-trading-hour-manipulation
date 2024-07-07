@@ -8,6 +8,7 @@ import org.example.model.BybitKlineDataForStatement;
 import org.example.model.KlineCandle;
 import org.example.model.bybit.BybitWebSocketResponse;
 
+import java.math.BigDecimal;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -23,9 +24,11 @@ public class Main {
         final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketDbQueue = new LinkedBlockingQueue<>();
         final BlockingQueue<BybitKlineDataForStatement> klineDataDbBlockingQueue = new LinkedBlockingQueue<>();
         final BlockingQueue<KlineCandle> klineCandleQueue = new LinkedBlockingQueue<>();
+        final BigDecimal initialBalance = new BigDecimal("1000.00");
+        final BigDecimal quantityThreshold = new BigDecimal("0.05");
 
         ProcessFactory processFactory = new BybitProcessFactoryImpl(websocketDbQueue,
-                klineDataDbBlockingQueue, klineCandleQueue);
+                klineDataDbBlockingQueue, klineCandleQueue, initialBalance, quantityThreshold);
 
         processFactory.subscribeToKline(Ticker.BTCUSDT, TickerInterval.ONE_MINUTE);
         processFactory.convertWebsocketDataAndEnrichQueues();

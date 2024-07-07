@@ -22,11 +22,12 @@ public class BybitWebSocketReader implements Runnable {
     private final TickerInterval interval;
     private final ObjectMapper mapper;
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
+    private final String STREAM_DOMAIN;
 
     @Override
     public void run() {
         var client = BybitApiClientFactory
-                .newInstance(BybitApiConfig.STREAM_MAINNET_DOMAIN, true)
+                .newInstance(STREAM_DOMAIN, true)
                 .newWebsocketClient();
 
         String topic = "kline." + interval.getBybitValue() + "." + ticker.getBybitValue();

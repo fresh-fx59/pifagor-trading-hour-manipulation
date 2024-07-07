@@ -1,5 +1,6 @@
 package org.example;
 
+import com.bybit.api.client.config.BybitApiConfig;
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.example.service.UniversalKlineCandleProcessorImpl;
 import org.example.service.websocket.bybit.BybitDatabaseWriter;
 import org.example.service.websocket.bybit.BybitWebSocketConverter;
 
+import java.math.BigDecimal;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +27,8 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
+    private final BigDecimal initialBalance;
+    private final BigDecimal quantityThreshold;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
@@ -38,7 +42,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
      */
     @Override
     public void subscribeToKline(Ticker ticker, TickerInterval interval) {
-        new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue).run();
+        new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, BybitApiConfig.STREAM_TESTNET_DOMAIN).run();
     }
 
     @Override
@@ -57,7 +61,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void processCandles() {
-        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue));
+        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold));
 //        new Thread(new CandleProcessor(klineCandleQueue, new UniversalKlineCandleProcessorImpl())).start();
     }
 }

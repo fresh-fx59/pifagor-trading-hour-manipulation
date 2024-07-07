@@ -86,12 +86,12 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             return;
         }
 
-//        if (candle.getIsKlineClosed()) {
+        if (candle.getIsKlineClosed()) {
             enrichHourCandle(candle);
-            updateOrder(candle);
-//        } else {
-//            updateHourCandle(candle);
-//        }
+        } else {
+            updateHourCandle(candle);
+        }
+        updateOrder(candle);
         updateFibaWithProcessor(candle);
     }
 
