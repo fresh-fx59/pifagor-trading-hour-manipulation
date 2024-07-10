@@ -3,7 +3,7 @@ package org.example.service;
 import ch.qos.logback.core.util.StringUtil;
 import com.bybit.api.client.config.BybitApiConfig;
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
-import com.bybit.api.client.service.BybitApiClientFactory;
+import com.bybit.api.client.websocket.httpclient.WebsocketStreamClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,8 @@ import org.example.model.bybit.BybitWebSocketResponse;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+
+import static org.example.config.WebsocketConfig.getTestClient;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -26,9 +28,11 @@ public class BybitWebSocketReader implements Runnable {
 
     @Override
     public void run() {
-        var client = BybitApiClientFactory
-                .newInstance(STREAM_DOMAIN, true)
-                .newWebsocketClient();
+        log.info("BybitWebSocketReader starting");
+//        var client = BybitApiClientFactory
+//                .newInstance(STREAM_DOMAIN, true)
+//                .newWebsocketClient();
+        WebsocketStreamClient client = getTestClient();
 
         String topic = "kline." + interval.getBybitValue() + "." + ticker.getBybitValue();
 
@@ -49,5 +53,14 @@ public class BybitWebSocketReader implements Runnable {
         });
 
         client.getPublicChannelStream(List.of(topic), BybitApiConfig.V5_PUBLIC_LINEAR);
+
+//        Timer timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                // Simulate a connection reset by closing the underlying TCP connection
+//                webSocket.cancel();
+//            }
+//        }, 5000);
     }
 }

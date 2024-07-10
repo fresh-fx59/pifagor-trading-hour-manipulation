@@ -21,7 +21,7 @@ import static org.example.CsvWriter.writeKlineCandles;
 @Slf4j
 public class Main {
     public static void main(String[] args) {
-        log.info("generator started");
+        log.info("generator starting");
         String filePath = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/1719869337_klineCandles_1709240400000-1711918740000.csv";
 
         KlineCandleProcessor candleProcessor = new UniversalKlineCandleProcessorImpl(new LinkedBlockingQueue<>());

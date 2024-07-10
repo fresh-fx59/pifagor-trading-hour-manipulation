@@ -30,7 +30,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BigDecimal initialBalance;
     private final BigDecimal quantityThreshold;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     /**
      * Subscribe to websocket data from Bybit and write it to blocking queue
@@ -42,25 +42,33 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
      */
     @Override
     public void subscribeToKline(Ticker ticker, TickerInterval interval) {
-        new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, BybitApiConfig.STREAM_TESTNET_DOMAIN).run();
+        executorService.execute(new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, BybitApiConfig.STREAM_TESTNET_DOMAIN));
+//        new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, BybitApiConfig.STREAM_TESTNET_DOMAIN).run();
     }
 
     @Override
     public void writeKlineToDb() {
+//        new BybitDatabaseWriter(klineDataForDbQueue).run();
         executorService.execute(new BybitDatabaseWriter(klineDataForDbQueue));
+//        executorService.scheduleAtFixedRate(
+//                () -> new BybitDatabaseWriter(klineDataForDbQueue),
+//                writeToDbIntervalMinutes,
+//                writeToDbIntervalMinutes,
+//                TimeUnit.MINUTES);
         //new Thread(new BybitDatabaseWriter(klineDataForDbQueue)).start();
 //        new BybitDatabaseWriter(klineDataForDbQueue).run();
     }
 
     @Override
     public void convertWebsocketDataAndEnrichQueues() {
+//        new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue).run();
         executorService.execute(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue));
 //        new Thread(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue)).start();
-//        new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue).run();
     }
 
     @Override
     public void processCandles() {
+//        new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold).run();
         executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold));
 //        new Thread(new CandleProcessor(klineCandleQueue, new UniversalKlineCandleProcessorImpl())).start();
     }

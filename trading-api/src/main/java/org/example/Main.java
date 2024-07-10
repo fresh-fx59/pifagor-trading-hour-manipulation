@@ -31,7 +31,7 @@ import static org.example.mapper.JsonMapper.getMapper;
 @Slf4j
 public class Main {
     public static void main(String[] args) throws IllegalAccessException, InstantiationException, IOException {
-        log.info("trading-api started");
+        log.info("trading-api starting");
 
         //showInfo();
 

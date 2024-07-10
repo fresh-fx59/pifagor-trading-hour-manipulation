@@ -22,10 +22,11 @@ public class BybitWebSocketConverter implements Runnable {
 
     @Override
     public void run() {
-        log.info("start connection");
+        log.info("BybitWebSocketConverter starting");
 
         try {
             while (true) {
+                Thread.sleep(100);
                 if (!websocketQueue.isEmpty()) {
                     BybitWebSocketResponse<KlineData> queueElement = websocketQueue.take();
                     String[] splittedTopic = queueElement.topic().split("\\.");

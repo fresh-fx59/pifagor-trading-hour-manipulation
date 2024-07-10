@@ -332,7 +332,13 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
 
     @Override
     public void run() {
+        log.info("UniversalKlineCandleProcessorImpl starting");
         while (true) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                log.error("failed to sleep");
+            }
             if (!klineCandleQueue.isEmpty()) {
                 KlineCandle klineCandle;
                 try {
