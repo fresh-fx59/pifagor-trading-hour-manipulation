@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public abstract class KlineCandleMapper {
+public abstract class KlineDataMapper {
 
     @Mapping(target = "openAt", expression = "java(LocalDateTime.ofInstant(java.time.Instant.ofEpochSecond(klineData.getStart()), java.time.ZoneOffset.UTC))")
     @Mapping(target = "closeAt", expression = "java(LocalDateTime.ofInstant(java.time.Instant.ofEpochSecond(klineData.getEnd()), java.time.ZoneOffset.UTC))")

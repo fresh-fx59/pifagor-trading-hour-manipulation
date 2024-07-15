@@ -29,7 +29,7 @@ public class WebsocketDataTest {
         klineData.setConfirm(false);
         klineData.setTimestamp(1719667601380L);
         BybitWebSocketResponse<KlineData> expectedResponse = new BybitWebSocketResponse<>("kline.1.BTCUSDT",
-                List.of(klineData), 1719667601380L, "snapshot");
+                List.of(klineData), 1719667601380L, "snapshot", null, null, null, null, null, null);
 
         //when
         BybitWebSocketResponse<KlineData> actualResponse = getMapper().readValue(message, new TypeReference<>(){});

@@ -45,7 +45,7 @@ public class Main {
 
     private static List<KlineCandle> getCandlesFromApi(Long start, Long end) {
         MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
-                .category(CategoryType.INVERSE)
+                .category(CategoryType.LINEAR)
                 .symbol("BTCUSDT")
                 .marketInterval(MarketInterval.ONE_MINUTE)
                 .start(start)

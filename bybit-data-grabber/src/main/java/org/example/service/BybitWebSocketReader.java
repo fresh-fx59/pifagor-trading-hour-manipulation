@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.enums.LoadType;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.bybit.BybitWebSocketResponse;
@@ -15,7 +16,7 @@ import org.example.model.bybit.BybitWebSocketResponse;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import static org.example.config.WebsocketConfig.getTestClient;
+import static org.example.config.WebsocketConfig.getClient;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -29,10 +30,7 @@ public class BybitWebSocketReader implements Runnable {
     @Override
     public void run() {
         log.info("BybitWebSocketReader starting");
-//        var client = BybitApiClientFactory
-//                .newInstance(STREAM_DOMAIN, true)
-//                .newWebsocketClient();
-        WebsocketStreamClient client = getTestClient();
+        WebsocketStreamClient client = getClient(STREAM_DOMAIN);
 
         String topic = "kline." + interval.getBybitValue() + "." + ticker.getBybitValue();
 
@@ -40,27 +38,25 @@ public class BybitWebSocketReader implements Runnable {
             if (StringUtil.isNullOrEmpty(message)) {
                 log.warn("Websocket Message is null");
             } else {
-                log.info(message);
-                BybitWebSocketResponse<KlineData> klineData = mapper.readValue(message, new TypeReference<>() {});
+                BybitWebSocketResponse<KlineData> mappedKlineData = mapper.readValue(message, new TypeReference<>() {});
+                BybitWebSocketResponse<KlineData> klineData = mappedKlineData.copy(LoadType.WEBSOCKET);
                 if (topic.equals(klineData.topic())) {
                     try {
+                        log.info("size {} data {}", klineData.data().size(), klineData.data());
                         websocketQueue.put(klineData);
                     } catch (InterruptedException e) {
                         log.error("Can't put element {} to queue", klineData, e);
                     }
+                } else if ("true".equals(klineData.success()) && "pong".equals(klineData.ret_msg())) {
+                    log.info("Pong message. conn_id = {}", klineData.conn_id());
+                } else if ("true".equals(klineData.success()) && "subscribe".equals(klineData.op())) {
+                    log.info("Connection established, conn_id = {} req_id = {}", klineData.conn_id(), klineData.req_id());
+                } else {
+                    log.warn("It is not KlineData {}", message);
                 }
             }
         });
 
         client.getPublicChannelStream(List.of(topic), BybitApiConfig.V5_PUBLIC_LINEAR);
-
-//        Timer timer = new Timer();
-//        timer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                // Simulate a connection reset by closing the underlying TCP connection
-//                webSocket.cancel();
-//            }
-//        }, 5000);
     }
 }

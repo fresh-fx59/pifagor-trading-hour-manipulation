@@ -11,7 +11,6 @@ import org.example.config.MyBybitApiTradeRestClient;
 import org.example.enums.OrderCategory;
 import org.example.enums.OrderSide;
 import org.example.enums.OrderType;
-import org.example.enums.Ticker;
 import org.example.model.Kline;
 import org.example.model.MarketData;
 import org.example.model.MarketDataCsv;
@@ -26,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
+import static org.example.enums.Ticker.BTCUSDT;
 import static org.example.mapper.JsonMapper.getMapper;
 
 @Slf4j
@@ -40,7 +40,7 @@ public class Main {
         OrderService orderService = new OrderServiceImpl();
         Order order = Order.builder()
                 .category(OrderCategory.LINEAR)
-                .ticker(Ticker.BTCUSDT)
+                .ticker(BTCUSDT)
                 .orderSide(OrderSide.BUY)
                 .type(OrderType.LIMIT)
                 .quantity("0.002")
@@ -66,7 +66,7 @@ public class Main {
     public static void showInfo() {
         var instrumentInfoRequest = MarketDataRequest.builder()
                 .category(CategoryType.LINEAR)
-                .symbol(Ticker.BTCUSDT.getBybitValue())
+                .symbol(BTCUSDT.getBybitValue())
                 .instrumentStatus(InstrumentStatus.TRADING)
                 .limit(500)
                 .build();
@@ -80,8 +80,8 @@ public class Main {
         Long end = 1717113540000L;
 
         MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
-                .category(CategoryType.INVERSE)
-                .symbol("BTCUSDT")
+                .category(CategoryType.LINEAR)
+                .symbol(BTCUSDT.getBybitValue())
                 .marketInterval(MarketInterval.ONE_MINUTE)
                 .start(start)
                 .end(end)

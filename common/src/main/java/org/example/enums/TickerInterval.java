@@ -1,5 +1,6 @@
 package org.example.enums;
 
+import com.bybit.api.client.domain.market.MarketInterval;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,13 @@ public enum TickerInterval {
     public static TickerInterval getTickerIntervalFromBybitValue(@NotNull String bybitValue) {
         return Arrays.stream(TickerInterval.values())
                 .filter(ti -> bybitValue.equals(ti.getBybitValue()))
+                .findAny()
+                .orElseThrow();
+    }
+
+    public MarketInterval getMarketInterval() {
+        return Arrays.stream(MarketInterval.values())
+                .filter(marketInterval -> marketInterval.getIntervalId().equals(bybitValue))
                 .findAny()
                 .orElseThrow();
     }

@@ -13,4 +13,6 @@ public interface ProcessFactory {
 
     void processCandles() throws InterruptedException;
 
+    void preprocessWebsocketData();
+
 }

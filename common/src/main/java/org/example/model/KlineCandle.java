@@ -83,8 +83,4 @@ public class KlineCandle {
         TickerInterval tickerInterval1 = this.tickerInterval;
         return tickerInterval1 == null ? null : tickerInterval1.getBybitValue();
     }
-
-    public void setPeriod(String bybitPeriod) {
-        this.tickerInterval = TickerInterval.getTickerIntervalFromBybitValue(bybitPeriod);
-    }
 }

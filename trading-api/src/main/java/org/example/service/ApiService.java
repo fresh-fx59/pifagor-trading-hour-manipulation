@@ -1,6 +1,7 @@
 package org.example.service;
 
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
+import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import org.example.model.KlineCandle;
 import org.example.model.MarketData;
 import org.example.model.MarketDataCsv;
@@ -14,4 +15,6 @@ public interface ApiService {
     List<MarketDataCsv> getMarketDataCsv(MarketDataRequest marketKLineRequest) throws IllegalAccessException, InstantiationException, IOException;
 
     List<KlineCandle> getMarketDataKline(MarketDataRequest marketKLineRequest);
+
+    List<KlineData> getMarketKlineData(MarketDataRequest marketKLineRequest);
 }

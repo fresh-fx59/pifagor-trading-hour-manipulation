@@ -1,0 +1,52 @@
+Reset Websocket Connection
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                 Simulate a connection reset by closing the underlying TCP connection
+                webSocket.cancel();
+            }
+        }, 5000);
+
+Bybit client instantiating
+
+        var client = BybitApiClientFactory
+                .newInstance(STREAM_DOMAIN, true)
+                .newWebsocketClient();
+
+Different ways to run tasks
+
+    @Override
+    public void subscribeToKline(Ticker ticker, TickerInterval interval) {
+        executorService.execute(new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, BybitApiConfig.STREAM_TESTNET_DOMAIN));
+//        new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, BybitApiConfig.STREAM_TESTNET_DOMAIN).run();
+    }
+
+    @Override
+    public void writeKlineToDb() {
+//        new BybitDatabaseWriter(klineDataForDbQueue).run();
+        executorService.execute(new BybitDatabaseWriter(klineDataForDbQueue));
+//        executorService.scheduleAtFixedRate(
+//                () -> new BybitDatabaseWriter(klineDataForDbQueue),
+//                writeToDbIntervalMinutes,
+//                writeToDbIntervalMinutes,
+//                TimeUnit.MINUTES);
+        //new Thread(new BybitDatabaseWriter(klineDataForDbQueue)).start();
+//        new BybitDatabaseWriter(klineDataForDbQueue).run();
+    }
+
+    @Override
+    public void convertWebsocketDataAndEnrichQueues() {
+//        new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue).run();
+        executorService.execute(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue));
+//        new Thread(new BybitWebSocketConverter(websocketQueue, klineDataForDbQueue, klineCandleQueue)).start();
+    }
+
+    @Override
+    public void processCandles() {
+//        new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold).run();
+        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold));
+//        new Thread(new CandleProcessor(klineCandleQueue, new UniversalKlineCandleProcessorImpl())).start();
+    }
+

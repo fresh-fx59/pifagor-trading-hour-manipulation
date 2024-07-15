@@ -1,8 +1,10 @@
 package org.example.service;
 
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
+import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import com.bybit.api.client.service.BybitApiClientFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.Kline;
 import org.example.model.KlineCandle;
 import org.example.model.MarketData;
 import org.example.model.MarketDataCsv;
@@ -16,7 +18,6 @@ import static org.example.service.ResponseConverter.convertStringToList;
 
 @Slf4j
 public class BybitApiServiceImpl implements ApiService {
-
     @Override
     public List<KlineCandle> getMarketDataKline(MarketDataRequest marketKLineRequest) {
         List<KlineCandle> candles = new ArrayList<>();
@@ -42,6 +43,49 @@ public class BybitApiServiceImpl implements ApiService {
         candles.sort(sortByStartinAt);
 
         return candles;
+    }
+
+    @Override
+    public List<KlineData> getMarketKlineData(MarketDataRequest marketKLineRequest) {
+        List<KlineData> klineData = new ArrayList<>();
+
+        var client = BybitApiClientFactory.newInstance().newMarketDataRestClient();
+
+        List<MarketDataRequest> requests = prepareRequests(marketKLineRequest);
+
+        requests.forEach(request -> {
+            final Object response = client.getMarketLinesData(request);
+            final MarketData marketData;
+            final Long responseReceivedTime = System.currentTimeMillis();
+            try {
+                marketData = convertResult(response, MarketData.class);
+                marketData.getList()
+                        .forEach(kline ->
+                                klineData.add(constructKlineData(kline, marketKLineRequest, responseReceivedTime)));
+            } catch (IllegalAccessException | InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return klineData;
+    }
+
+    private KlineData constructKlineData(Kline kline, MarketDataRequest marketKLineRequest, Long receivedTime) {
+        KlineData result = new KlineData();
+
+        result.setStart(kline.getStartTime());
+        result.setEnd(kline.getStartTime() + 59_999);
+        result.setInterval(marketKLineRequest.getMarketInterval().getIntervalId());
+        result.setOpen(kline.getOpenPrice().toString());
+        result.setClose(kline.getClosePrice().toString());
+        result.setHigh(kline.getHighPrice().toString());
+        result.setLow(kline.getLowPrice().toString());
+        result.setVolume(kline.getVolume());
+        result.setTurnover(kline.getTurnover());
+        result.setConfirm(true);
+        result.setTimestamp(receivedTime);
+
+        return result;
     }
 
     @Override

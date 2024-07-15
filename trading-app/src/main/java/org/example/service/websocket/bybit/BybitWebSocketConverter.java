@@ -16,7 +16,7 @@ import static org.example.enums.TickerInterval.getTickerIntervalFromBybitValue;
 @Slf4j
 @RequiredArgsConstructor
 public class BybitWebSocketConverter implements Runnable {
-    private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
+    private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
 
@@ -27,15 +27,15 @@ public class BybitWebSocketConverter implements Runnable {
         try {
             while (true) {
                 Thread.sleep(100);
-                if (!websocketQueue.isEmpty()) {
-                    BybitWebSocketResponse<KlineData> queueElement = websocketQueue.take();
+                if (!preprocessedWebsocketQueue.isEmpty()) {
+                    BybitWebSocketResponse<KlineData> queueElement = preprocessedWebsocketQueue.take();
                     String[] splittedTopic = queueElement.topic().split("\\.");
                     Ticker ticker = Ticker.getTickerFromBybitValue(splittedTopic[2]);
                     TickerInterval tickerInterval = getTickerIntervalFromBybitValue(splittedTopic[1]);
 
                     for (KlineData klineData : queueElement.data()) {
                         klineCandleQueue.put(new KlineCandle(klineData, ticker, tickerInterval));
-                        klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval));
+                        klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval, queueElement.loadType()));
                     }
                 }
             }

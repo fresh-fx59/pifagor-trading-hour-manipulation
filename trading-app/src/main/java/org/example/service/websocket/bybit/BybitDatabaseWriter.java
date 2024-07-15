@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import static org.example.config.ConfigClickhouseDataSource.getConnection;
+import static org.example.util.ConcurrencyHelper.sleepMillis;
 
 @Slf4j
 @RequiredArgsConstructor
 public class BybitDatabaseWriter implements Runnable {
     private final BlockingQueue<BybitKlineDataForStatement> bybitKlineDataForStatement;
     private final List<BybitKlineDataForStatement> notProcessedKlines = Collections.synchronizedList(new ArrayList<>());
-    private final int batchSize = 50;
+    private final int batchSize = 5;
     private int batchCounter = 0;
     private final int sleepAfterException = 1000;
     private final int sleepBeforeEachWhile = 1 * 1000;
@@ -42,12 +43,7 @@ public class BybitDatabaseWriter implements Runnable {
                 }
                 notProcessedKlines.clear();
             }
-            try {
-                log.warn("trying to reconnect to clickhouse");
-                Thread.sleep(sleepAfterException);
-            } catch (InterruptedException ex) {
-                log.error("failed to sleep", ex);
-            }
+            sleepMillis(sleepAfterException, "trying to reconnect to clickhouse");
             run();
         }
     }
@@ -73,6 +69,7 @@ public class BybitDatabaseWriter implements Runnable {
                 stmt.setString(8, klineData.getHigh());
                 stmt.setString(9, klineData.getLow());
                 stmt.setBoolean(10, klineData.getConfirm());
+                stmt.setString(11, klineData.getLoadType() == null ? null : klineData.getLoadType().toString());
 
                 stmt.addBatch();
                 batchCounter++;
@@ -105,8 +102,9 @@ public class BybitDatabaseWriter implements Runnable {
                     closePrice,
                     highPrice,
                     lowPrice,
-                    isKlineClosed
-                    ) VALUES (fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),?,?,?,?,?,?,?)
+                    isKlineClosed,
+                    loadType
+                    ) VALUES (fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),?,?,?,?,?,?,?,?)
                     """);
     }
 }

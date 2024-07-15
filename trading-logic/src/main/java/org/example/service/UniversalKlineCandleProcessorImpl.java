@@ -26,6 +26,7 @@ import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
 import static org.example.model.OrdersData.SLTP_PREFIX;
 import static org.example.model.enums.FibaLevel.*;
 import static org.example.model.enums.OrdersDataParams.ORDERS_CREATED;
+import static org.example.util.ConcurrencyHelper.sleepMillis;
 import static org.example.utils.KlineCandleHelper.isFirstMinuteOfHour;
 import static org.example.utils.KlineCandleHelper.isLastMinuteOfHour;
 import static org.example.utils.OrderHelper.generateUUID;
@@ -334,11 +335,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     public void run() {
         log.info("UniversalKlineCandleProcessorImpl starting");
         while (true) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                log.error("failed to sleep");
-            }
+            sleepMillis(100, null);
             if (!klineCandleQueue.isEmpty()) {
                 KlineCandle klineCandle;
                 try {
