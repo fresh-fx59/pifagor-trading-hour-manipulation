@@ -11,6 +11,7 @@ import org.example.service.BybitApiServiceImpl;
 import org.example.service.KlineCandleProcessor;
 import org.example.service.UniversalKlineCandleProcessorImpl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -24,7 +25,7 @@ public class Main {
         log.info("generator starting");
         String filePath = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/1719869337_klineCandles_1709240400000-1711918740000.csv";
 
-        KlineCandleProcessor candleProcessor = new UniversalKlineCandleProcessorImpl(new LinkedBlockingQueue<>());
+        KlineCandleProcessor candleProcessor = new UniversalKlineCandleProcessorImpl(new LinkedBlockingQueue<>(), new BigDecimal("31000"), new BigDecimal("0.05"));
 
         List<KlineCandle> candlesToProcess = new ArrayList<>();
 

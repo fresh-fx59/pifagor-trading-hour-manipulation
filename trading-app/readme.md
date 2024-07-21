@@ -31,3 +31,6 @@ _BYBIT_API_URL_=https://api-testnet.bybit.com - used to place orders
 
 By default, the app connects to ByBit testnet.
 
+Flow Chart
+https://drive.google.com/file/d/1DsGdlFlUIqehI0Sz7yMcLbCjXnku1Awi/view?usp=sharing
+

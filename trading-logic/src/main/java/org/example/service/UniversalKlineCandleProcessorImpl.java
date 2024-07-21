@@ -56,10 +56,6 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
 
     public final static int ROUND_SIGN_QUANTITY = 3;
 
-    public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue) {
-        this(klineCandleQueue, new BigDecimal("31000"), new BigDecimal("0.05"));
-    }
-
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold) {
