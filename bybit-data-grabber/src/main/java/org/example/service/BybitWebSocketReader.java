@@ -42,7 +42,7 @@ public class BybitWebSocketReader implements Runnable {
                 BybitWebSocketResponse<KlineData> klineData = mappedKlineData.copy(LoadType.WEBSOCKET);
                 if (topic.equals(klineData.topic())) {
                     try {
-                        log.info("size {} data {}", klineData.data().size(), klineData.data());
+                        log.debug("size {} data {}", klineData.data().size(), klineData.data());
                         websocketQueue.put(klineData);
                     } catch (InterruptedException e) {
                         log.error("Can't put element {} to queue", klineData, e);

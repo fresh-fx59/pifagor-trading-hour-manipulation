@@ -21,7 +21,7 @@ import static org.example.util.ConcurrencyHelper.sleepMillis;
 public class BybitDatabaseWriter implements Runnable {
     private final BlockingQueue<BybitKlineDataForStatement> bybitKlineDataForStatement;
     private final List<BybitKlineDataForStatement> notProcessedKlines = Collections.synchronizedList(new ArrayList<>());
-    private final int batchSize = 5;
+    private final int batchSize = 50;
     private int batchCounter = 0;
     private final int sleepAfterException = 1000;
     private final int sleepBeforeEachWhile = 1 * 1000;

@@ -1,4 +1,7 @@
 version: '3.8'
+volumes:
+  clickhouse:
+    driver: local
 services:
   pthm-clickhouse-flyway:
     image: 'clickhouse/clickhouse-server:${CHVER:-latest}'
@@ -7,12 +10,13 @@ services:
     hostname: pthm-clickhouse-flyway
     volumes:
       - ./fs/volumes/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-      - ./fs/volumes/clickhouse/data:/var/lib/clickhouse
+      ##- ./fs/volumes/clickhouse/data:/var/lib/clickhouse
+      - clickhouse:/var/lib/clickhouse
       - ./fs/volumes/clickhouse/logs:/var/log/clickhouse-server
       - ./fs/volumes/clickhouse/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
       - ./fs/volumes/clickhouse/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
     ports:
-      - '127.0.0.1:8125:8123'
+      - '8125:8123'
       - '127.0.0.1:9004:9000'
     depends_on:
       - pthm-clickhouse-flyway-keeper

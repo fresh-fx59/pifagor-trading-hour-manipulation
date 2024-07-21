@@ -63,9 +63,16 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold) {
+        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl());
+    }
+
+    public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
+                                             BigDecimal initialBalance,
+                                             BigDecimal quantityThreshold,
+                                             OrderService orderService) {
         this.klineCandleQueue = klineCandleQueue;
         this.fibaCandlesData = new FibaCandlesData(setZeroFibaPriceLevels(), new LinkedList<>());
-        this.orderService = new OrderServiceImpl();
+        this.orderService = orderService;
         this.ordersData = new OrdersData(new HashMap<>(),
                 new HashMap<>() {{
                     put(OrdersDataParams.IS_EMPTY, true);

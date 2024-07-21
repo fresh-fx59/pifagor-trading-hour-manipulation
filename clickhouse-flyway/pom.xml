@@ -60,8 +60,8 @@
                 <version>${flyway.version}</version>
                 <configuration>
                     <url>jdbc:clickhouse://localhost:8125/trading_app</url>
-                    <user>trading_app</user>
-                    <password>strongPassword123!</password>
+                    <user>default</user>
+                    <password></password>
                     <locations>
                         <location>classpath:db/migration</location>
                     </locations>
