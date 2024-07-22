@@ -47,7 +47,10 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderId(orderManipulationResponse.result().getOrderId());
             log.debug("order with system ID = {} processed", order.getOrderId());
         } else {
-            log.error("Something went wrong processing the order: {}", orderManipulationResponse.retMsg());
+            log.error("Something went wrong processing the order: {} \n response {} \n order {}",
+                    orderManipulationResponse.retMsg(),
+                    orderManipulationResponse,
+                    order);
         }
     }
 

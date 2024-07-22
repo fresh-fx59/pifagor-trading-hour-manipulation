@@ -28,7 +28,7 @@ public class Main {
         final BlockingQueue<KlineCandle> klineCandleQueue = new LinkedBlockingQueue<>();
         final BigDecimal initialBalance = new BigDecimal("1000.00");
         final BigDecimal quantityThreshold = new BigDecimal("0.05");
-        final String apiGateway = BybitApiConfig.STREAM_TESTNET_DOMAIN;
+        final String apiGateway = BybitApiConfig.STREAM_MAINNET_DOMAIN;
 
         ProcessFactory processFactory = new BybitProcessFactoryImpl(websocketDbQueue, preprocessedWebsocketDbQueue,
                 klineDataDbBlockingQueue, klineCandleQueue, initialBalance, quantityThreshold, apiGateway);

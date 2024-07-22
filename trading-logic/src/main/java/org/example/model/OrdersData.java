@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.example.model.enums.FibaLevel.*;
-import static org.example.service.UniversalKlineCandleProcessorImpl.ROUND_SIGN_QUANTITY;
+import static org.example.service.UniversalKlineCandleProcessorImpl.ROUND_SIGN_PRICE;
 import static org.example.utils.OrderHelper.getPrice;
 
 public record OrdersData(Map<FibaLevel, BigDecimal> fibaLevelsToCompare,
@@ -50,9 +50,9 @@ public record OrdersData(Map<FibaLevel, BigDecimal> fibaLevelsToCompare,
     }
 
     public Order amendOrderPriceTpSl(Map<FibaLevel, BigDecimal> levelPrice) {
-        order.setPrice(getPrice(levelPrice.get(FIVE), ROUND_SIGN_QUANTITY));
-        order.setStopLoss(getPrice(levelPrice.get(ONE), ROUND_SIGN_QUANTITY));
-        order.setTakeProfit(getPrice(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_QUANTITY));
+        order.setPrice(getPrice(levelPrice.get(FIVE), ROUND_SIGN_PRICE));
+        order.setStopLoss(getPrice(levelPrice.get(ONE), ROUND_SIGN_PRICE));
+        order.setTakeProfit(getPrice(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_PRICE));
         fibaLevelsToCompare.putAll(levelPrice);
         return order;
     }

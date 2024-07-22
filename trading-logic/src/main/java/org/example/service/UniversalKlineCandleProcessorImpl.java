@@ -12,6 +12,7 @@ import org.example.processor.fiba.UpdateFibaProcessor;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -54,7 +55,8 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private BigDecimal balance;
     private final BigDecimal quantityThreshold;
 
-    public final static int ROUND_SIGN_QUANTITY = 3;
+    public final static int ROUND_SIGN_PRICE = 3;
+    public final static int ROUND_SIGN_QUANTITY = 4;
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
@@ -223,16 +225,17 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         BigDecimal orderPrice = levelPrice.get(FIVE);
         BigDecimal quantityWOThreshold = balance.divide(orderPrice, MathContext.DECIMAL32);
         BigDecimal quantity = quantityWOThreshold
-                .subtract(quantityWOThreshold.multiply(quantityThreshold, MathContext.DECIMAL32));
+                .subtract(quantityWOThreshold.multiply(quantityThreshold,
+                        new MathContext(ROUND_SIGN_QUANTITY, RoundingMode.HALF_EVEN)));
         return Order.builder()
                 .category(OrderCategory.LINEAR)
                 .ticker(ticker)
                 .orderSide(OrderSide.BUY)
                 .type(OrderType.LIMIT)
                 .quantity(quantity.toString())
-                .price(getPrice(orderPrice, ROUND_SIGN_QUANTITY))
-                .takeProfit(getPrice(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_QUANTITY))
-                .stopLoss(getPrice(levelPrice.get(ONE), ROUND_SIGN_QUANTITY))
+                .price(getPrice(orderPrice, ROUND_SIGN_PRICE))
+                .takeProfit(getPrice(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_PRICE))
+                .stopLoss(getPrice(levelPrice.get(ONE), ROUND_SIGN_PRICE))
                 .customOrderId(SLTP_PREFIX + generateUUID21())
                 .build();
     }
