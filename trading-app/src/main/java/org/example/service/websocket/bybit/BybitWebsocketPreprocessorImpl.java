@@ -28,7 +28,6 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
     private KlineData savedKline;
 
     private final int sleepAfterException = 1000;
-    private final int sleepInWhile = 10;
 
     public void preprocess() throws InterruptedException {
         final BybitWebSocketResponse<KlineData> incomingResponse = websocketQueue.take();
@@ -98,7 +97,7 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
     @Override
     public void run() {
         while (true) {
-            sleepMillis(sleepInWhile, null);
+            log.debug("preprocessing...");
             try {
                 preprocess();
             } catch (Exception e) {

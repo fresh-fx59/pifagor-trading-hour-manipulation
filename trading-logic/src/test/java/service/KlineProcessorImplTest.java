@@ -61,4 +61,25 @@ public class KlineProcessorImplTest {
         assertThat(actualResult).isEqualTo(expectedResult);
     }
 
+    @Test
+    public void universalCandleProcessorCustomFile() {
+        //given
+        String filePath = "src/test/resources/universal_kline_candle_1721433600-1721519940-closed-minutes-1721596603823.csv";
+        BigDecimal expectedResult = new BigDecimal("0");
+        List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
+        candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
+        MathContext mc = new MathContext(7, RoundingMode.DOWN);
+
+        //when
+        when(orderService.createOrder(any())).then(returnsFirstArg());
+        when(orderService.amendOrder(any())).then(returnsFirstArg());
+        doReturn(FILLED).when(orderService).getOrderStatus(any());
+        candlesToProcess.forEach(universalKlineCandleProcessor::processCandleData);
+        BigDecimal actualResult = universalKlineCandleProcessor.getBalance()
+                .subtract(initialBalance, mc);
+
+        //then
+        assertThat(actualResult).isEqualTo(expectedResult);
+    }
+
 }

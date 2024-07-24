@@ -52,38 +52,35 @@ public class BybitDatabaseWriter implements Runnable {
         log.info("start connection");
         PreparedStatement stmt = getStmt();
 
-//        while (!bybitKlineDataForStatement.isEmpty()) {
         while (true) {
-            Thread.sleep(sleepBeforeEachWhile);
-            if (!bybitKlineDataForStatement.isEmpty()) {
-                BybitKlineDataForStatement klineData = bybitKlineDataForStatement.take();
-                notProcessedKlines.add(klineData);
+            BybitKlineDataForStatement klineData = bybitKlineDataForStatement.take();
+            notProcessedKlines.add(klineData);
 
-                stmt.setLong(1, klineData.getTimestamp());
-                stmt.setLong(2, klineData.getStart());
-                stmt.setLong(3, klineData.getEnd());
-                stmt.setString(4, klineData.getTicker().getUniversalValue());
-                stmt.setString(5, klineData.getTickerInterval().getUniversalValue());
-                stmt.setString(6, klineData.getOpen());
-                stmt.setString(7, klineData.getClose());
-                stmt.setString(8, klineData.getHigh());
-                stmt.setString(9, klineData.getLow());
-                stmt.setBoolean(10, klineData.getConfirm());
-                stmt.setString(11, klineData.getLoadType() == null ? null : klineData.getLoadType().toString());
+            stmt.setLong(1, klineData.getTimestamp());
+            stmt.setLong(2, klineData.getStart());
+            stmt.setLong(3, klineData.getEnd());
+            stmt.setString(4, klineData.getTicker().getUniversalValue());
+            stmt.setString(5, klineData.getTickerInterval().getUniversalValue());
+            stmt.setString(6, klineData.getOpen());
+            stmt.setString(7, klineData.getClose());
+            stmt.setString(8, klineData.getHigh());
+            stmt.setString(9, klineData.getLow());
+            stmt.setBoolean(10, klineData.getConfirm());
+            stmt.setString(11, klineData.getLoadType() == null ? null : klineData.getLoadType().toString());
 
-                stmt.addBatch();
-                batchCounter++;
+            stmt.addBatch();
+            batchCounter++;
+            log.debug("batchCounter = {}", batchCounter);
 
-                if (batchCounter >= batchSize) {
-                    int[] result = stmt.executeBatch();
-                    batchCounter = 0;
-                    notProcessedKlines.clear();
-                    if (Arrays.stream(result).allMatch(value -> 1 == value)) {
-                        log.info("{} rows written to db", result.length);
-                    } else {
-                        log.error("{} rows out of {} wasn't written to db", Arrays.stream(result)
-                                .filter(value -> value != 1).count(), result.length);
-                    }
+            if (batchCounter >= batchSize) {
+                int[] result = stmt.executeBatch();
+                batchCounter = 0;
+                notProcessedKlines.clear();
+                if (Arrays.stream(result).allMatch(value -> 1 == value)) {
+                    log.info("{} rows written to db", result.length);
+                } else {
+                    log.error("{} rows out of {} wasn't written to db", Arrays.stream(result)
+                            .filter(value -> value != 1).count(), result.length);
                 }
             }
         }

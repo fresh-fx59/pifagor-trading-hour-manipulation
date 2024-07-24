@@ -24,9 +24,32 @@ public class MoreThanOneHourCandleExists implements UpdateFibaProcessor {
             return;
 
         if (fe.incomingCandleHigh().compareTo(fe.fibaHigh()) > 0) {
+            log.info("""
+                        fiba processor MORE THAN ONE HOUR CANDLE:
+                        hour candles {}, hour of incoming candle {},
+                        fiba data
+                        {}
+                        update fiba price on hourCandle
+                        {}
+                        """,
+                    fe.hourCandlesCount(),
+                    fe.incomingCandle().getOpenAt().getHour(),
+                    fibaCandlesData.fibaPriceLevels(),
+                    fe.incomingCandle());
             fibaCandlesData.updateFibaPrice(calculateValueForLevel(fe.fibaLow(), fe.incomingCandleHigh()));
         } else if (fe.hourCandleLow().compareTo(fibaCandlesData.getLevel05()) <= 0) {
-            log.info("clean up on hourCandle {}", fe.incomingCandle());
+            log.info("""
+                        fiba processor MORE THAN ONE HOUR CANDLE:
+                        hour candles {}, hour of incoming candle {},
+                        fiba data
+                        {}
+                        clean up on incoming candle
+                        {}
+                        """,
+                    fe.hourCandlesCount(),
+                    fe.incomingCandle().getOpenAt().getHour(),
+                    fibaCandlesData.fibaPriceLevels(),
+                    fe.incomingCandle());
             fibaCandlesData.cleanUp();
         }
     }

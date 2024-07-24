@@ -12,6 +12,7 @@ import org.example.model.bybit.BybitWebSocketResponse;
 import java.util.concurrent.BlockingQueue;
 
 import static org.example.enums.TickerInterval.getTickerIntervalFromBybitValue;
+import static org.example.util.ConcurrencyHelper.sleepMillis;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class BybitWebSocketConverter implements Runnable {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
+    private final int sleepAfterException = 1000;
 
     @Override
     public void run() {
@@ -26,20 +28,19 @@ public class BybitWebSocketConverter implements Runnable {
 
         try {
             while (true) {
-                Thread.sleep(100);
-                if (!preprocessedWebsocketQueue.isEmpty()) {
-                    BybitWebSocketResponse<KlineData> queueElement = preprocessedWebsocketQueue.take();
-                    String[] splittedTopic = queueElement.topic().split("\\.");
-                    Ticker ticker = Ticker.getTickerFromBybitValue(splittedTopic[2]);
-                    TickerInterval tickerInterval = getTickerIntervalFromBybitValue(splittedTopic[1]);
+                log.debug("converting event...");
+                BybitWebSocketResponse<KlineData> queueElement = preprocessedWebsocketQueue.take();
+                String[] splittedTopic = queueElement.topic().split("\\.");
+                Ticker ticker = Ticker.getTickerFromBybitValue(splittedTopic[2]);
+                TickerInterval tickerInterval = getTickerIntervalFromBybitValue(splittedTopic[1]);
 
-                    for (KlineData klineData : queueElement.data()) {
-                        klineCandleQueue.put(new KlineCandle(klineData, ticker, tickerInterval));
-                        klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval, queueElement.loadType()));
-                    }
+                for (KlineData klineData : queueElement.data()) {
+                    klineCandleQueue.put(new KlineCandle(klineData, ticker, tickerInterval));
+                    klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval, queueElement.loadType()));
                 }
             }
         } catch (Exception e) {
+            sleepMillis(sleepAfterException, "trying to restart BybitWebSocketConverter");
             log.error("Failed to convert data.", e);
             run();
         }
