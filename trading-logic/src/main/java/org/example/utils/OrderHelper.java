@@ -25,7 +25,7 @@ public class OrderHelper {
      * @param roundSignQuantity signs after dot
      * @return string representation of big decimal
      */
-    public static String getPrice(BigDecimal incomingPrice, Integer roundSignQuantity) {
+    public static String roudBigDecimal(BigDecimal incomingPrice, Integer roundSignQuantity) {
         return incomingPrice.setScale(roundSignQuantity, RoundingMode.HALF_UP).toPlainString();
     }
 }

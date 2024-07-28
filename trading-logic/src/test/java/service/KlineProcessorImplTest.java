@@ -44,7 +44,7 @@ public class KlineProcessorImplTest {
     public void universalCandleProcessor() {
         //given
         String filePath = "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv";
-        BigDecimal expectedResult = new BigDecimal("2342.227");
+        BigDecimal expectedResult = new BigDecimal("2342.304");
         List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
         candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
         MathContext mc = new MathContext(7, RoundingMode.DOWN);

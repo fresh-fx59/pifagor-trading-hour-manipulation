@@ -38,9 +38,12 @@ public class OneHourCandleProcessor implements UpdateFibaProcessor {
                         hour candles {}, hour of incoming candle {}
                         fiba data
                         {}
+                        incoming candle
+                        {}
                         """,
                 fibaCandlesData.getCandlesCount(),
                 fe.incomingCandle().getOpenAt().getHour(),
-                fibaCandlesData.fibaPriceLevels());
+                fibaCandlesData.fibaPriceLevels(),
+                fe.incomingCandle());
     }
 }
