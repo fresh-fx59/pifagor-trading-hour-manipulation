@@ -50,4 +50,26 @@ public class CsvReader {
                 new BigDecimal(columns[6])
         );
     }
+
+    public static KlineCandle getCandleWithConfirm(String line) {
+        String lineWithoutQuotes = line.replaceAll("\"", "");
+        String[] columns = lineWithoutQuotes.split(",");
+        return new KlineCandle(
+                getUTCLocalDateTimeFromInstant(columns[0]),
+                columns[1],
+                columns[2],
+                new BigDecimal(columns[3]),
+                new BigDecimal(columns[4]),
+                new BigDecimal(columns[5]),
+                new BigDecimal(columns[6]),
+                Boolean.parseBoolean(columns[7]),
+                getUTCLocalDateTimeFromInstant(columns[8])
+        );
+    }
+
+    private static LocalDateTime getUTCLocalDateTimeFromInstant(String incomingInt) {
+        long unixTime = Long.parseLong(incomingInt);
+        Instant unixTimeInstant = Instant.ofEpochMilli(unixTime);
+        return LocalDateTime.ofInstant(unixTimeInstant, ZoneOffset.UTC);
+    }
 }

@@ -24,6 +24,7 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
     private final ApiService bybitApiService = new BybitApiServiceImpl();
+    private final boolean testModeEnabled;
 
     private KlineData savedKline;
 
@@ -32,29 +33,31 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
     public void preprocess() throws InterruptedException {
         final BybitWebSocketResponse<KlineData> incomingResponse = websocketQueue.take();
         final BybitWebSocketResponse<KlineData> preprocessedResponse;
-        final boolean doesAnyCandleMatch = doesAnyCandleMatch(incomingResponse);
+        final boolean doesAnyCandleMatch = doesAnyIncomingCandlesStartMatchSavedCandleStart(incomingResponse);
 
         List<KlineData> incomingKlines = incomingResponse.data();
 
-            if (savedKline == null
-                    || (CollectionUtils.isNotEmpty(incomingKlines) && doesAnyCandleMatch)
-            ) {
-                preprocessedResponse = incomingResponse;
-            } else if (!doesAnyCandleMatch) {
-                List<KlineData> klineDataToPass = getMissedKlines(incomingResponse);
-                preprocessedResponse = incomingResponse.copy(klineDataToPass, LoadType.REST);
-                log.info("missed candles gathered {}", klineDataToPass);
-            } else {
-                KlineData lastIncomingKline = getLastCandle(incomingResponse);
-                log.error("""
-                        This situation is not coded yet.
-                        Saved kline {}
-                        replaced with last candle {}
-                        Incoming response passed as is
-                        """,
-                        savedKline, lastIncomingKline);
-                preprocessedResponse = incomingResponse;
-            }
+        if (savedKline == null
+                || (CollectionUtils.isNotEmpty(incomingKlines) && doesAnyCandleMatch)
+                || ((incomingKlines.size() == 1 && (incomingKlines.get(0).getStart() - savedKline.getStart()) == 60_000)
+                     && testModeEnabled)
+        ) {
+            preprocessedResponse = incomingResponse;
+        } else if (!doesAnyCandleMatch && !testModeEnabled) {
+            List<KlineData> klineDataToPass = getMissedKlines(incomingResponse);
+            preprocessedResponse = incomingResponse.copy(klineDataToPass, LoadType.REST);
+            log.info("missed candles gathered {}", klineDataToPass);
+        } else {
+            KlineData lastIncomingKline = getLastCandle(incomingResponse);
+            log.error("""
+                            This situation is not coded yet.
+                            Saved kline {}
+                            replaced with last candle {}
+                            Incoming response passed as is
+                            """,
+                    savedKline, lastIncomingKline);
+            preprocessedResponse = incomingResponse;
+        }
 
         savedKline = getLastCandle(preprocessedResponse);
         preprocessedWebsocketQueue.put(preprocessedResponse);
@@ -82,7 +85,7 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
         return bybitApiService.getMarketKlineData(marketKLineRequest);
     }
 
-    private boolean doesAnyCandleMatch(BybitWebSocketResponse<KlineData> incomingResponse) {
+    private boolean doesAnyIncomingCandlesStartMatchSavedCandleStart(BybitWebSocketResponse<KlineData> incomingResponse) {
         if (savedKline == null)
             return false;
         Predicate<KlineData> klinesStartMatch = klineData -> savedKline.getStart().equals(klineData.getStart());

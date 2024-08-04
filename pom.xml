@@ -34,6 +34,7 @@
         <module>trading-app</module>
         <module>csv-processor</module>
         <module>bybit-data-grabber</module>
+        <module>websocket-server-jakarta</module>
     </modules>
 
     <dependencies>

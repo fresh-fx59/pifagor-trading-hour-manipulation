@@ -346,6 +346,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 log.error("Failed to get data from queue", e);
                 klineCandle = new KlineCandle();
             }
+            log.debug(klineCandle.toString());
             processCandleData(klineCandle);
         }
     }

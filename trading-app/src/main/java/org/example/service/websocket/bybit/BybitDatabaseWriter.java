@@ -24,7 +24,6 @@ public class BybitDatabaseWriter implements Runnable {
     private final int batchSize = 50;
     private int batchCounter = 0;
     private final int sleepAfterException = 1000;
-    private final int sleepBeforeEachWhile = 1 * 1000;
 
     @Override
     public void run() {

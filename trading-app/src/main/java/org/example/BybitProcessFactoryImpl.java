@@ -1,8 +1,8 @@
 package org.example;
 
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.enums.ProcessFactorySettings;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
@@ -15,14 +15,15 @@ import org.example.service.websocket.bybit.BybitWebSocketConverter;
 import org.example.service.websocket.bybit.BybitWebsocketPreprocessorImpl;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.example.enums.ProcessFactorySettings.*;
 import static org.example.mapper.JsonMapper.getMapper;
 
 @Slf4j
-@RequiredArgsConstructor
 public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
@@ -31,8 +32,24 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BigDecimal initialBalance;
     private final BigDecimal quantityThreshold;
     private final String apiGateway;
+    private final boolean testModeEnabled;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+    public BybitProcessFactoryImpl(BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue,
+                                   BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue,
+                                   BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue,
+                                   BlockingQueue<KlineCandle> klineCandleQueue,
+                                   Map<ProcessFactorySettings, String> properties) {
+        this.websocketQueue = websocketQueue;
+        this.preprocessedWebsocketQueue = preprocessedWebsocketQueue;
+        this.klineDataForDbQueue = klineDataForDbQueue;
+        this.klineCandleQueue = klineCandleQueue;
+        this.initialBalance = new BigDecimal(properties.get(INITIAL_BALANCE));
+        this.quantityThreshold = new BigDecimal(properties.get(QUANTITY_THRESHOLD));
+        this.apiGateway = properties.get(API_GATEWAY);
+        this.testModeEnabled = Boolean.parseBoolean(properties.get(ENABLE_TEST_MODE));
+    }
 
     /**
      * Subscribe to websocket data from Bybit and write it to blocking queue
@@ -64,6 +81,6 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void preprocessWebsocketData() {
-        executorService.execute(new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue));
+        executorService.execute(new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue, testModeEnabled));
     }
 }

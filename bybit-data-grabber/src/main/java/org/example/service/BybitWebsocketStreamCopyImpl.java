@@ -28,7 +28,6 @@ import static org.example.util.ConcurrencyHelper.sleepMillis;
 @Slf4j
 public class BybitWebsocketStreamCopyImpl implements WebsocketStreamClient {
     private static final String THREAD_PING = "thread-ping-";
-    private static final String THREAD_PRIVATE_AUTH = "thread-private-auth";
     private static final String PING_DATA = "{\"op\":\"ping\"}";
     private static final ObjectMapper objectMapper = new ObjectMapper();
     @Setter
@@ -335,11 +334,14 @@ public class BybitWebsocketStreamCopyImpl implements WebsocketStreamClient {
         log.info(wssUrl);
         this.webSocket = this.webSocketHttpClientSingleton.createWebSocket(wssUrl, this.createWebSocketListener());
 
-        final String pingThreadName = THREAD_PING + System.currentTimeMillis();
-        this.pingThreadName = pingThreadName;
-        Thread pingThread = this.createPingThread();
-        pingThread.setName(pingThreadName);
-        pingThread.start();
+        if (!wssUrl.contains("localhost")) {
+            final String pingThreadName = THREAD_PING + System.currentTimeMillis();
+            this.pingThreadName = pingThreadName;
+            Thread pingThread = this.createPingThread();
+            pingThread.setName(pingThreadName);
+            pingThread.start();
+        }
+
         return this.webSocket;
     }
 

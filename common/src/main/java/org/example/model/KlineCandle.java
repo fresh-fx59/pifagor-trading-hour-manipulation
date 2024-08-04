@@ -63,6 +63,14 @@ public class KlineCandle {
         this.close = close;
     }
 
+    public KlineCandle(LocalDateTime openAt, String symbol, String period,
+                       BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal close, Boolean isKlineClosed,
+                       LocalDateTime closeAt) {
+        this(openAt, symbol, period, open, high, low, close);
+        this.isKlineClosed = isKlineClosed;
+        this.closeAt = closeAt;
+    }
+
     public KlineCandle(@NotNull KlineData klineData,
                        @NotNull Ticker ticker,
                        @NotNull TickerInterval tickerInterval

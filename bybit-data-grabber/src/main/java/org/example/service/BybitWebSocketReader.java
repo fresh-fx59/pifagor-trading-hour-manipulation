@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.enums.LoadType;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.bybit.BybitWebSocketResponse;
@@ -38,8 +37,7 @@ public class BybitWebSocketReader implements Runnable {
             if (StringUtil.isNullOrEmpty(message)) {
                 log.warn("Websocket Message is null");
             } else {
-                BybitWebSocketResponse<KlineData> mappedKlineData = mapper.readValue(message, new TypeReference<>() {});
-                BybitWebSocketResponse<KlineData> klineData = mappedKlineData.copy(LoadType.WEBSOCKET);
+                BybitWebSocketResponse<KlineData> klineData = mapper.readValue(message, new TypeReference<>() {});
                 if (topic.equals(klineData.topic())) {
                     try {
                         log.debug("size {} data {}", klineData.data().size(), klineData.data());

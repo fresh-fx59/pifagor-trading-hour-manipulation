@@ -1,5 +1,6 @@
 package org.example.model.bybit;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.example.enums.LoadType;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
@@ -20,6 +21,20 @@ public record BybitWebSocketResponse<T> (
         String req_id,
         LoadType loadType
 ) {
+    @JsonCreator
+    public BybitWebSocketResponse(String topic, List<T> data, Long ts, String type, String ret_msg, String op, String success, String conn_id, String req_id, LoadType loadType) {
+        this.topic = topic;
+        this.data = data;
+        this.ts = ts;
+        this.type = type;
+        this.ret_msg = ret_msg;
+        this.op = op;
+        this.success = success;
+        this.conn_id = conn_id;
+        this.req_id = req_id;
+        this.loadType = loadType == null ? LoadType.WEBSOCKET : loadType;
+    }
+
     public BybitWebSocketResponse<T> copy(
             List<T> data,
             LoadType loadType

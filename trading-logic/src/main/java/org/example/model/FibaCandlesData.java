@@ -53,7 +53,7 @@ public record FibaCandlesData(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
     }
 
     /**
-     * Set fiba levels to sero and clear hour candles.
+     * Set fiba levels to zero and clear hour candles.
      */
     public void cleanUp() {
         setZeroFibaPriceLevels(this.fibaPriceLevels);
