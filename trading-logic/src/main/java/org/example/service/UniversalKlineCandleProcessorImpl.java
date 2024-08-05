@@ -47,6 +47,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             new MoreThanOneHourCandleExists());
 
     private final BlockingQueue<KlineCandle> klineCandleQueue;
+    private final Boolean testModeEnabled;
 
 
     private KlineCandle hourCandle;
@@ -58,15 +59,18 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
-                                             BigDecimal quantityThreshold) {
-        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl());
+                                             BigDecimal quantityThreshold,
+                                             Boolean testModeEnabled) {
+        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(testModeEnabled), testModeEnabled);
     }
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold,
-                                             OrderService orderService) {
+                                             OrderService orderService,
+                                             Boolean testModeEnabled) {
         this.klineCandleQueue = klineCandleQueue;
+        this.testModeEnabled = testModeEnabled;
         this.fibaCandlesData = new FibaCandlesData(setZeroFibaPriceLevels(), new LinkedList<>());
         this.orderService = orderService;
         this.ordersData = new OrdersData(new HashMap<>(),
@@ -143,8 +147,8 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             if (hourCandlesCount < 2 && !ordersData.getParam(ORDERS_CREATED, false)) {
                 return;
             } else if (hourCandlesCount == 2
-                    && isLastMinuteOfHour(candlesTime)
-                    && candle.getIsKlineClosed()
+//                    && isLastMinuteOfHour(candlesTime)
+//                    && candle.getIsKlineClosed()
                     && !ordersData.getParam(ORDERS_CREATED, false)) {
 
                 Map<FibaLevel, BigDecimal> levelPrice = Map.of(THREEEIGHTTWO, fibaLevel0382, FIVE, fibaLevel05, ONE, fibaLevel1);

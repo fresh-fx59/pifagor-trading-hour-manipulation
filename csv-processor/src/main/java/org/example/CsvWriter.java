@@ -9,16 +9,19 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.KlineCandleCsvWriter;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class CsvWriter {
+    private static final String PATH = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/";
+
     public static void writeKlineCandles(List<KlineCandleCsvWriter> klineCandles, Long from, Long to) {
-        String path = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/";
-        String prefix = path + Instant.now().getEpochSecond();
+        String prefix = PATH + Instant.now().getEpochSecond();
         String postfix = from + "-" + to;
 
 
@@ -37,6 +40,28 @@ public class CsvWriter {
             beanToCsv.write(klineCandles);
         } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
             log.error("Something goes wrong while writing CSV file", e);
+        }
+    }
+    public static void writeKlineCandlesBuffer(List<KlineCandleCsvWriter> klineCandles, Long from, Long to) {
+        final String prefix = PATH + Instant.now().getEpochSecond();
+        final String postfix = from + "-" + to;
+        final String fullFileNameWithPath = prefix + "_klineCandles_" + postfix + ".csv";
+        AtomicLong rowsCount = new AtomicLong(0);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fullFileNameWithPath))) {
+            klineCandles.forEach(candle -> {
+                try {
+                    writer.write(candle.toCsvString());
+                    rowsCount.incrementAndGet();
+                } catch (IOException e) {
+                    log.error("failed to write data to file", e);
+                }
+            });
+            log.info("{} rows written to file {}",
+                    rowsCount.get(),
+                    fullFileNameWithPath);
+        } catch (IOException e) {
+            log.error("Something goes wrong while writing CSV file with BufferedWriter", e);
         }
     }
 }

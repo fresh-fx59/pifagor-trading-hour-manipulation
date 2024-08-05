@@ -27,4 +27,18 @@ public class KlineCandleCsvWriter {
         this.low = klineCandle.getLow();
         this.close = klineCandle.getClose();
     }
+
+    public String toCsvString() {
+        return String.format("""
+                        "%s","%s","%s","%s","%s","%s","%s"
+                        """,
+                this.openAt,
+                this.symbol,
+                this.period,
+                this.open,
+                this.high,
+                this.low,
+                this.close
+        );
+    }
 }

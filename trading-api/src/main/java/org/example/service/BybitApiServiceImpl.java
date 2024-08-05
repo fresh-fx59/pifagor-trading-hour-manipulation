@@ -11,6 +11,7 @@ import org.example.model.MarketDataCsv;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.example.service.HttpService.getResponse;
 import static org.example.service.ResponseConverter.convertResult;
@@ -26,11 +27,15 @@ public class BybitApiServiceImpl implements ApiService {
 
         List<MarketDataRequest> requests = prepareRequests(marketKLineRequest);
 
+        AtomicInteger requestsCount = new AtomicInteger(0);
         requests.forEach(request -> {
             Object response = client.getMarketLinesData(request);
             MarketData marketData;
             try {
                 marketData = convertResult(response, MarketData.class);
+                log.info("Got {} records from ByBit API on {} request",
+                        marketData.getList() == null ? 0 : marketData.getList().size(),
+                        requestsCount.incrementAndGet());
                 marketData.getList()
                         .forEach(kline ->
                                 candles.add(new KlineCandle(kline, marketKLineRequest)));

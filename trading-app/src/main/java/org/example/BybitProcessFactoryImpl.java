@@ -66,7 +66,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void writeKlineToDb() {
-        executorService.execute(new BybitDatabaseWriter(klineDataForDbQueue));
+        executorService.execute(new BybitDatabaseWriter(klineDataForDbQueue, testModeEnabled));
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void processCandles() {
-        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold));
+        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold, testModeEnabled));
     }
 
     @Override

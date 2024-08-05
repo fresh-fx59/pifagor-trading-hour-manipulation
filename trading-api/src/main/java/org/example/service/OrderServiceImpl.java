@@ -3,6 +3,7 @@ package org.example.service;
 import com.bybit.api.client.domain.trade.request.TradeOrderRequest;
 import com.bybit.api.client.domain.trade.response.OrderResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.config.MyBybitApiTradeRestClient;
 import org.example.enums.OrderStatus;
@@ -13,14 +14,19 @@ import org.mapstruct.factory.Mappers;
 
 import static org.example.mapper.JsonMapper.getMapper;
 
+@RequiredArgsConstructor
 @Slf4j
 public class OrderServiceImpl implements OrderService {
+    private final Boolean testModeEnabled;
     private final static String SUCCESS_RET_CODE = "0";
     private final OrderMapper orderMapper = Mappers.getMapper(OrderMapper.class);
 
 
     @Override
     public Order createOrder(Order order) {
+        if (testModeEnabled)
+            return order;
+
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequest(order);
         Object orderResponseObject = MyBybitApiTradeRestClient.getBybitApiTradeRestClient().createOrder(tradeOrderRequest);
 
@@ -31,6 +37,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order amendOrder(Order order) {
+        if (testModeEnabled)
+            return order;
+
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequestAmend(order);
         Object orderResponseObject = MyBybitApiTradeRestClient.getBybitApiTradeRestClient().amendOrder(tradeOrderRequest);
 
@@ -56,6 +65,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void cancelOrder(Order order) {
+        if (testModeEnabled)
+            return;
+
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequestCancel(order);
         Object orderResponseObject = MyBybitApiTradeRestClient.getBybitApiTradeRestClient().cancelOrder(tradeOrderRequest);
 

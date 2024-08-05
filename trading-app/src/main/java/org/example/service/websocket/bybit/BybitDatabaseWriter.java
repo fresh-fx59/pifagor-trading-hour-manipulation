@@ -21,6 +21,7 @@ import static org.example.util.ConcurrencyHelper.sleepMillis;
 public class BybitDatabaseWriter implements Runnable {
     private final BlockingQueue<BybitKlineDataForStatement> bybitKlineDataForStatement;
     private final List<BybitKlineDataForStatement> notProcessedKlines = Collections.synchronizedList(new ArrayList<>());
+    private final Boolean testModeEnabled;
     private final int batchSize = 50;
     private int batchCounter = 0;
     private final int sleepAfterException = 1000;
@@ -72,7 +73,12 @@ public class BybitDatabaseWriter implements Runnable {
             log.debug("batchCounter = {}", batchCounter);
 
             if (batchCounter >= batchSize) {
-                int[] result = stmt.executeBatch();
+                final int[] result;
+                if (testModeEnabled) {
+                    result = fakePropagateResult();
+                } else {
+                    result = stmt.executeBatch();
+                }
                 batchCounter = 0;
                 notProcessedKlines.clear();
                 if (Arrays.stream(result).allMatch(value -> 1 == value)) {
@@ -83,6 +89,14 @@ public class BybitDatabaseWriter implements Runnable {
                 }
             }
         }
+    }
+
+    private int[] fakePropagateResult() {
+        int[] result = new int[batchCounter];
+        for (int i = 0; i < batchCounter; i++) {
+            result[i] = 1;
+        }
+        return result;
     }
 
     private static PreparedStatement getStmt() throws SQLException {

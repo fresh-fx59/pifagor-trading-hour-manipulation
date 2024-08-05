@@ -38,16 +38,17 @@ public class CsvReader {
     private static KlineCandle getCandle(String line) {
         String lineWithoutQuotes = line.replaceAll("\"", "");
         String[] columns = lineWithoutQuotes.split(",");
-        int unixTime = Integer.parseInt(columns[0]);
-        Instant unixTimeInstant = Instant.ofEpochSecond(unixTime);
+        final String additionalZeros = "000";
         return new KlineCandle(
-                LocalDateTime.ofInstant(unixTimeInstant, ZoneOffset.UTC),
+                getUTCLocalDateTimeFromInstant(columns[0] + additionalZeros),
                 columns[1],
                 columns[2],
                 new BigDecimal(columns[3]),
                 new BigDecimal(columns[4]),
                 new BigDecimal(columns[5]),
-                new BigDecimal(columns[6])
+                new BigDecimal(columns[6]),
+                true,
+                getUTCLocalDateTimeFromInstant(columns[0] + additionalZeros).plusSeconds(59).plusNanos(999000000)
         );
     }
 

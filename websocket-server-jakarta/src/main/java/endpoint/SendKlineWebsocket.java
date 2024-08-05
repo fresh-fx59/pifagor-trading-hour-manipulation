@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static org.example.CsvReader.getCandleWithConfirm;
 import static org.example.enums.LoadType.TEST_WEBSOCKET;
@@ -19,9 +18,6 @@ import static org.example.enums.LoadType.TEST_WEBSOCKET;
 @Slf4j
 @ServerEndpoint("/v5/public/linear")
 public class SendKlineWebsocket {
-    private static final int INACTIVITY_TIMEOUT = 10; // 10 seconds
-    private Session session;
-    private ScheduledExecutorService scheduledExecutor;
     private static Set<Session> clients = new HashSet<>();
 
     @OnClose
@@ -49,24 +45,7 @@ public class SendKlineWebsocket {
             String line;
             while ((line = reader.readLine()) != null) {
                 final KlineCandle candle = getCandleWithConfirm(line);
-                final long timestamp = System.currentTimeMillis();
-                final String toPass =
-                        String.format("{\"topic\":\"kline.1.BTCUSDT\",\"data\":[{\"start\":%s," +
-                                "\"end\":%s,\"interval\":\"%s\",\"open\":\"%s\",\"close\":\"%s\"," +
-                                "\"high\":\"%s\",\"low\":\"%s\",\"volume\":\"0\",\"turnover\":\"0\"," +
-                                "\"confirm\":%s,\"timestamp\":%s}],\"ts\":%s,\"type\":\"snapshot\"," +
-                                "\"loadType\":\"%s\"}",
-                                candle.getOpenAt().toEpochSecond(ZoneOffset.UTC) * 1000,
-                                candle.getCloseAt().toEpochSecond(ZoneOffset.UTC) * 1000 + 999,
-                                "1",
-                                candle.getOpen(),
-                                candle.getClose(),
-                                candle.getHigh(),
-                                candle.getLow(),
-                                candle.getIsKlineClosed(),
-                                timestamp,
-                                timestamp,
-                                TEST_WEBSOCKET);
+                final String toPass = convertCandleToJsonResponse(candle);
                 log.info(toPass);
                 broadcast(toPass);
             }
@@ -77,25 +56,30 @@ public class SendKlineWebsocket {
 
     }
 
-    public void onMessageOld(String message, Session session) throws InterruptedException {
-        log.info("Received message: " + message);
-        final String responseKlineData = "{\"topic\":\"kline.1.BTCUSDT\",\"data\":[{\"start\":1722792660000,\"end\":1722792719999,\"interval\":\"1\",\"open\":\"58207.6\",\"close\":\"58191\",\"high\":\"58224\",\"low\":\"58176.6\",\"volume\":\"48.945\",\"turnover\":\"2848668.2379\",\"confirm\":false,\"timestamp\":1722792691747}],\"ts\":1722792691747,\"type\":\"snapshot\"}";
-        final int messagesToSend = 100;
-        int sentMessages = 0;
-
-        while (messagesToSend > sentMessages++) {
-            broadcast(responseKlineData);
-            //Thread.sleep(1000);
-            log.info("broadcasting message #{}", sentMessages);
-        }
+    private String convertCandleToJsonResponse(KlineCandle candle) {
+        final long timestamp = System.currentTimeMillis();
+        return String.format("{\"topic\":\"kline.1.BTCUSDT\",\"data\":[{\"start\":%s," +
+                        "\"end\":%s,\"interval\":\"%s\",\"open\":\"%s\",\"close\":\"%s\"," +
+                        "\"high\":\"%s\",\"low\":\"%s\",\"volume\":\"0\",\"turnover\":\"0\"," +
+                        "\"confirm\":%s,\"timestamp\":%s}],\"ts\":%s,\"type\":\"snapshot\"," +
+                        "\"loadType\":\"%s\"}",
+                candle.getOpenAt().toEpochSecond(ZoneOffset.UTC) * 1000,
+                candle.getCloseAt().toEpochSecond(ZoneOffset.UTC) * 1000 + 999,
+                "1",
+                candle.getOpen(),
+                candle.getClose(),
+                candle.getHigh(),
+                candle.getLow(),
+                candle.getIsKlineClosed(),
+                timestamp,
+                timestamp,
+                TEST_WEBSOCKET);
     }
 
     @OnOpen
     public void onOpen(Session session) {
-//        session.setMaxIdleTimeout(INACTIVITY_TIMEOUT);
         clients.add(session);
         log.info("websocket connection established " + session.getId());
-        this.session = session;
     }
 
     private void broadcast(String message) {

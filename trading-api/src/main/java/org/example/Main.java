@@ -37,7 +37,14 @@ public class Main {
 
         log.info("start processing order");
 
-        OrderService orderService = new OrderServiceImpl();
+
+
+
+        log.info("trading-api end");
+    }
+
+    private void orderManipulation() {
+        OrderService orderService = new OrderServiceImpl(false);
         Order order = Order.builder()
                 .category(OrderCategory.LINEAR)
                 .ticker(BTCUSDT)
@@ -55,9 +62,6 @@ public class Main {
         createdOrder.setTakeProfit("51001.00");
         Order editedOrder = orderService.amendOrder(createdOrder);
         orderService.cancelOrder(editedOrder);
-
-
-        log.info("trading-api end");
     }
 
     /**
@@ -73,11 +77,12 @@ public class Main {
         log.info(String.valueOf((LinkedHashMap<String, Object>) MyBybitApiTradeRestClient.getBybitApiMarketRestClient().getInstrumentsInfo(instrumentInfoRequest)));
     }
 
-    public static void getDataFromCsv() throws IOException, IllegalAccessException, InstantiationException {
-        ApiService apiService = new BybitApiServiceImpl();
+    public static void getDataFromApiAndWriteToCsv() throws IOException, IllegalAccessException, InstantiationException {
+        getDataFromApiAndWriteToCsv(1717027140000L, 1717113540000L);
+    }
 
-        Long start = 1717027140000L;
-        Long end = 1717113540000L;
+    public static void getDataFromApiAndWriteToCsv(Long start, Long end) throws IOException, IllegalAccessException, InstantiationException {
+        ApiService apiService = new BybitApiServiceImpl();
 
         MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
                 .category(CategoryType.LINEAR)
