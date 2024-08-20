@@ -3,13 +3,11 @@ package org.example.service.websocket.bybit;
 import com.bybit.api.client.domain.CategoryType;
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.example.enums.LoadType;
 import org.example.model.bybit.BybitWebSocketResponse;
 import org.example.service.ApiService;
-import org.example.service.BybitApiServiceImpl;
 
 import java.util.Comparator;
 import java.util.List;
@@ -19,20 +17,35 @@ import java.util.function.Predicate;
 import static org.example.util.ConcurrencyHelper.sleepMillis;
 
 @Slf4j
-@RequiredArgsConstructor
-public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocessor, Runnable {
+public class BybitWebsocketPreprocessorImpl implements WebsocketPreprocessor, Runnable {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
-    private final ApiService bybitApiService = new BybitApiServiceImpl();
+    private final ApiService bybitApiService;
     private final boolean testModeEnabled;
+    private Boolean isColdStartRunning;
 
     private KlineData savedKline;
 
     private final int sleepAfterException = 1000;
 
+    public BybitWebsocketPreprocessorImpl(BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue,
+                                          BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue,
+                                          ApiService bybitApiService,
+                                          boolean testModeEnabled,
+                                          Boolean isColdStartRunning) {
+        this.websocketQueue = websocketQueue;
+        this.preprocessedWebsocketQueue = preprocessedWebsocketQueue;
+        this.bybitApiService = bybitApiService;
+        this.testModeEnabled = testModeEnabled;
+        this.isColdStartRunning = isColdStartRunning;
+    }
+
     public void preprocess() throws InterruptedException {
         final BybitWebSocketResponse<KlineData> incomingResponse = websocketQueue.take();
         final BybitWebSocketResponse<KlineData> preprocessedResponse;
+
+        log.info("preprocess incoming response {}", incomingResponse);
+
         final boolean doesAnyCandleMatch = doesAnyIncomingCandlesStartMatchSavedCandleStart(incomingResponse);
 
         List<KlineData> incomingKlines = incomingResponse.data();
@@ -40,7 +53,7 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
         if (savedKline == null
                 || (CollectionUtils.isNotEmpty(incomingKlines) && doesAnyCandleMatch)
                 || ((incomingKlines.size() == 1 && (incomingKlines.get(0).getStart() - savedKline.getStart()) == 60_000)
-                     && testModeEnabled)
+                && testModeEnabled)
         ) {
             preprocessedResponse = incomingResponse;
         } else if (!doesAnyCandleMatch && !testModeEnabled) {
@@ -60,7 +73,13 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
         }
 
         savedKline = getLastCandle(preprocessedResponse);
+
         preprocessedWebsocketQueue.put(preprocessedResponse);
+    }
+
+    @Override
+    public void setIsColdStartRunning(Boolean isColdStartRunning) {
+        this.isColdStartRunning = isColdStartRunning;
     }
 
     private List<KlineData> getMissedKlines(BybitWebSocketResponse<KlineData> incomingResponse) {
@@ -73,7 +92,7 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
 
         log.warn("missed {} minute candles, getting missed candles", minutesMissed);
 
-        MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
+        final MarketDataRequest marketKLineRequest = MarketDataRequest.builder()
                 .category(CategoryType.LINEAR)
                 .symbol(incomingResponse.getTicker().getBybitValue())
                 .marketInterval(incomingResponse.getTickerInterval().getMarketInterval())
@@ -88,8 +107,10 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
     private boolean doesAnyIncomingCandlesStartMatchSavedCandleStart(BybitWebSocketResponse<KlineData> incomingResponse) {
         if (savedKline == null)
             return false;
-        Predicate<KlineData> klinesStartMatch = klineData -> savedKline.getStart().equals(klineData.getStart());
-        List<KlineData> klines = incomingResponse.data();
+
+        final Predicate<KlineData> klinesStartMatch = klineData -> savedKline.getStart().equals(klineData.getStart());
+        final List<KlineData> klines = incomingResponse.data();
+
         return klines.stream().anyMatch(klinesStartMatch);
     }
 
@@ -102,7 +123,8 @@ public class BybitWebsocketPreprocessorImpl implements BybitWebsocketPreprocesso
         while (true) {
             log.debug("preprocessing...");
             try {
-                preprocess();
+                if (!isColdStartRunning)
+                    preprocess();
             } catch (Exception e) {
                 log.error("Failed to preprocess websocketData. Last savedKline {}", savedKline, e);
                 sleepMillis(sleepAfterException, "trying to restart preprocess");

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import static org.example.config.WebsocketConfig.getClient;
+import static org.example.util.ResponseHelper.getBybitTopic;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -31,7 +32,7 @@ public class BybitWebSocketReader implements Runnable {
         log.info("BybitWebSocketReader starting");
         WebsocketStreamClient client = getClient(STREAM_DOMAIN);
 
-        String topic = "kline." + interval.getBybitValue() + "." + ticker.getBybitValue();
+        String topic = getBybitTopic(ticker, interval);
 
         client.setMessageHandler(message -> {
             if (StringUtil.isNullOrEmpty(message)) {

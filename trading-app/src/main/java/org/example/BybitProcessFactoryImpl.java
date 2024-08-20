@@ -8,8 +8,10 @@ import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
 import org.example.model.KlineCandle;
 import org.example.model.bybit.BybitWebSocketResponse;
+import org.example.service.ApiService;
 import org.example.service.BybitWebSocketReader;
 import org.example.service.UniversalKlineCandleProcessorImpl;
+import org.example.service.websocket.bybit.BybitColdStartImpl;
 import org.example.service.websocket.bybit.BybitDatabaseWriter;
 import org.example.service.websocket.bybit.BybitWebSocketConverter;
 import org.example.service.websocket.bybit.BybitWebsocketPreprocessorImpl;
@@ -26,29 +28,48 @@ import static org.example.mapper.JsonMapper.getMapper;
 @Slf4j
 public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
+    private final BlockingQueue<BybitWebSocketResponse<KlineData>> coldStartQueue;
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
+
     private final BigDecimal initialBalance;
     private final BigDecimal quantityThreshold;
-    private final String apiGateway;
+    private final String websocketUrl;
     private final boolean testModeEnabled;
+    private final Ticker ticker;
+    private final TickerInterval tickerInterval;
+    private final int daysToRetreiveData;
+    private Boolean isColdStartRunning = true;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final ApiService apiService;
+    private final BybitWebsocketPreprocessorImpl preprocessor;
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public BybitProcessFactoryImpl(BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue,
+                                   BlockingQueue<BybitWebSocketResponse<KlineData>> coldStartQueue,
                                    BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue,
                                    BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue,
                                    BlockingQueue<KlineCandle> klineCandleQueue,
+                                   ApiService apiService,
                                    Map<ProcessFactorySettings, String> properties) {
         this.websocketQueue = websocketQueue;
+        this.coldStartQueue = coldStartQueue;
         this.preprocessedWebsocketQueue = preprocessedWebsocketQueue;
         this.klineDataForDbQueue = klineDataForDbQueue;
         this.klineCandleQueue = klineCandleQueue;
+        this.apiService = apiService;
+
         this.initialBalance = new BigDecimal(properties.get(INITIAL_BALANCE));
         this.quantityThreshold = new BigDecimal(properties.get(QUANTITY_THRESHOLD));
-        this.apiGateway = properties.get(API_GATEWAY);
+        this.websocketUrl = properties.get(WEBSOCKET_URL);
         this.testModeEnabled = Boolean.parseBoolean(properties.get(ENABLE_TEST_MODE));
+        this.ticker = Ticker.getTickerFromBybitValue(properties.get(TICKER));
+        this.tickerInterval = TickerInterval.getTickerIntervalFromBybitValue(properties.get(TICKER_INTERVAL));
+        this.daysToRetreiveData = Integer.parseInt(properties.get(DAYS_TO_RETREIVE_DATA));
+
+        this.preprocessor = new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue, apiService, testModeEnabled, isColdStartRunning);
     }
 
     /**
@@ -61,7 +82,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
      */
     @Override
     public void subscribeToKline(Ticker ticker, TickerInterval interval) {
-        executorService.execute(new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, apiGateway));
+        executorService.execute(new BybitWebSocketReader(ticker, interval, getMapper(), websocketQueue, websocketUrl));
     }
 
     @Override
@@ -81,6 +102,19 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void preprocessWebsocketData() {
-        executorService.execute(new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue, testModeEnabled));
+        executorService.execute(preprocessor);
+    }
+
+    @Override
+    public void coldStart() {
+        executorService.execute(
+                new BybitColdStartImpl(
+                        daysToRetreiveData,
+                        preprocessedWebsocketQueue,
+                        apiService,
+                        ticker,
+                        tickerInterval,
+                        preprocessor)
+        );
     }
 }

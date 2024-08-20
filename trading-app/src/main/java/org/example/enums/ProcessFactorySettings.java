@@ -2,8 +2,11 @@ package org.example.enums;
 
 public enum ProcessFactorySettings {
     ENABLE_TEST_MODE,
-    API_GATEWAY,
+    WEBSOCKET_URL,
     QUANTITY_THRESHOLD,
-    INITIAL_BALANCE
-
+    INITIAL_BALANCE,
+    TICKER,
+    TICKER_INTERVAL,
+    DAYS_TO_RETREIVE_DATA,
+    SHOW_CANDLES,
 }

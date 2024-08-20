@@ -55,7 +55,7 @@ public class Main {
                 .build();
         ApiService bybitApiService = new BybitApiServiceImpl();
 
-        List<KlineCandle> result = bybitApiService.getMarketDataKline(marketKLineRequest);
+        List<KlineCandle> result = bybitApiService.getMarketDataKlineCandle(marketKLineRequest);
 
         List<KlineCandleCsvWriter> candlesForCsv = result.stream().map(KlineCandleCsvWriter::new).toList();
 

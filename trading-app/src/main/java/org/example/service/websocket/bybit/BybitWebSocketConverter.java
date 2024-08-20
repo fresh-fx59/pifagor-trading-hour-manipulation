@@ -3,6 +3,7 @@ package org.example.service.websocket.bybit;
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.enums.LoadType;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
@@ -22,6 +23,8 @@ public class BybitWebSocketConverter implements Runnable {
     private final BlockingQueue<KlineCandle> klineCandleQueue;
     private final int sleepAfterException = 1000;
 
+    private int restartRetryCount = 0;
+
     @Override
     public void run() {
         log.info("BybitWebSocketConverter starting");
@@ -33,14 +36,15 @@ public class BybitWebSocketConverter implements Runnable {
                 String[] splittedTopic = queueElement.topic().split("\\.");
                 Ticker ticker = Ticker.getTickerFromBybitValue(splittedTopic[2]);
                 TickerInterval tickerInterval = getTickerIntervalFromBybitValue(splittedTopic[1]);
+                LoadType loadType = queueElement.loadType();
 
                 for (KlineData klineData : queueElement.data()) {
-                    klineCandleQueue.put(new KlineCandle(klineData, ticker, tickerInterval));
-                    klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval, queueElement.loadType()));
+                    klineCandleQueue.put(new KlineCandle(klineData, ticker, tickerInterval, loadType));
+                    klineDataForDbQueue.put(new BybitKlineDataForStatement(klineData, ticker, tickerInterval, loadType));
                 }
             }
         } catch (Exception e) {
-            sleepMillis(sleepAfterException, "trying to restart BybitWebSocketConverter");
+            sleepMillis(sleepAfterException, String.format("trying to restart BybitWebSocketConverter %d", restartRetryCount++));
             log.error("Failed to convert data.", e);
             run();
         }

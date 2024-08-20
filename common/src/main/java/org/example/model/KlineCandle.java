@@ -4,6 +4,7 @@ import com.bybit.api.client.domain.market.request.MarketDataRequest;
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.example.enums.LoadType;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +31,7 @@ public class KlineCandle {
     private TickerInterval tickerInterval;
     private Ticker ticker;
     private LocalDateTime eventTime;
+    private LoadType loadType;
     //private ZoneOffset s = UTC;
 
     /**
@@ -73,7 +75,8 @@ public class KlineCandle {
 
     public KlineCandle(@NotNull KlineData klineData,
                        @NotNull Ticker ticker,
-                       @NotNull TickerInterval tickerInterval
+                       @NotNull TickerInterval tickerInterval,
+                       @NotNull LoadType loadType
                        ) {
         this.ticker = ticker;
         this.tickerInterval = tickerInterval;
@@ -85,6 +88,7 @@ public class KlineCandle {
         this.close = new BigDecimal(klineData.getHigh());
         this.isKlineClosed = klineData.getConfirm();
         this.eventTime = fromUnixToLocalDateTimeUtc(klineData.getTimestamp());
+        this.loadType = loadType;
     }
 
     public String getPeriod() {

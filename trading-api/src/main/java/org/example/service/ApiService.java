@@ -14,7 +14,7 @@ public interface ApiService {
     List<MarketDataCsv> getMarketDataCsvRawHttp(MarketDataRequest marketKLineRequest) throws IllegalAccessException, InstantiationException, IOException;
     List<MarketDataCsv> getMarketDataCsv(MarketDataRequest marketKLineRequest) throws IllegalAccessException, InstantiationException, IOException;
 
-    List<KlineCandle> getMarketDataKline(MarketDataRequest marketKLineRequest);
+    List<KlineCandle> getMarketDataKlineCandle(MarketDataRequest marketKLineRequest);
 
     List<KlineData> getMarketKlineData(MarketDataRequest marketKLineRequest);
 }

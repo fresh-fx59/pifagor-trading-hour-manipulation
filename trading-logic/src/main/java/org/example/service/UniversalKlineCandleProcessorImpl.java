@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
+import static org.example.enums.LoadType.COLD_START;
 import static org.example.enums.OrderStatus.FILLED;
 import static org.example.enums.TickerInterval.ONE_HOUR;
 import static org.example.enums.TickerInterval.ONE_MINUTE;
@@ -37,6 +38,9 @@ import static org.example.utils.OrderHelper.roudBigDecimal;
  *   reboot while there is already data processed(I should save all info to database to make program restart)
  *   add order processing logging
  */
+//todo set risk - how much money could be lost on stop loss order. so we should automatically tune up leverage on each order
+//todo (very important could led to money lose) add second candle low threshold from 0.5 level. This should be done, because sometimes the second candle low is veri close to 0.5 level but th impulse doesn't formed and the situation trigger stop loss order later on
+    //todo add power of the price deviation. for example if the price go high up to 50 percent, so the strategy could behave unpredictable.
 @Slf4j
 public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, Runnable {
     private final FibaCandlesData fibaCandlesData;
@@ -47,7 +51,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             new MoreThanOneHourCandleExists());
 
     private final BlockingQueue<KlineCandle> klineCandleQueue;
-    private final Boolean testModeEnabled;
+    private final Boolean isUpdateOrderEnabled;
 
 
     private KlineCandle hourCandle;
@@ -61,16 +65,22 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold,
                                              Boolean testModeEnabled) {
-        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(testModeEnabled), testModeEnabled);
+        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(testModeEnabled), true);
+    }
+
+    public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
+                                             BigDecimal initialBalance,
+                                             BigDecimal quantityThreshold,
+                                             OrderService orderService) {
+        this(klineCandleQueue, initialBalance, quantityThreshold, orderService, true);
     }
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold,
                                              OrderService orderService,
-                                             Boolean testModeEnabled) {
+                                             Boolean isUpdateOrderEnabled) {
         this.klineCandleQueue = klineCandleQueue;
-        this.testModeEnabled = testModeEnabled;
         this.fibaCandlesData = new FibaCandlesData(setZeroFibaPriceLevels(), new LinkedList<>());
         this.orderService = orderService;
         this.ordersData = new OrdersData(new HashMap<>(),
@@ -80,6 +90,9 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 new Order());
         this.balance = initialBalance;
         this.quantityThreshold = quantityThreshold;
+        this.isUpdateOrderEnabled = isUpdateOrderEnabled;
+
+
     }
 
     @Override
@@ -99,7 +112,8 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         } else {
             updateHourCandle(candle);
         }
-        updateOrder(candle);
+        if (isUpdateOrderEnabled && !COLD_START.equals(candle.getLoadType()))
+            updateOrder(candle);
         updateFibaWithProcessor(candle);
     }
 
@@ -350,7 +364,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 log.error("Failed to get data from queue", e);
                 klineCandle = new KlineCandle();
             }
-            log.debug(klineCandle.toString());
+            //log.info("processing candle {}", klineCandle);
             processCandleData(klineCandle);
         }
     }

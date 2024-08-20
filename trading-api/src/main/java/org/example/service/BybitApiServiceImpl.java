@@ -20,7 +20,7 @@ import static org.example.service.ResponseConverter.convertStringToList;
 @Slf4j
 public class BybitApiServiceImpl implements ApiService {
     @Override
-    public List<KlineCandle> getMarketDataKline(MarketDataRequest marketKLineRequest) {
+    public List<KlineCandle> getMarketDataKlineCandle(MarketDataRequest marketKLineRequest) {
         List<KlineCandle> candles = new ArrayList<>();
 
         var client = BybitApiClientFactory.newInstance().newMarketDataRestClient();

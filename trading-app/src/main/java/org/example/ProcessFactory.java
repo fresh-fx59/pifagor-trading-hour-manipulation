@@ -15,4 +15,5 @@ public interface ProcessFactory {
 
     void preprocessWebsocketData();
 
+    void coldStart();
 }

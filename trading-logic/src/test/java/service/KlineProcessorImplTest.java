@@ -37,7 +37,7 @@ public class KlineProcessorImplTest {
 
     @BeforeEach
     public void init() {
-        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService, true);
+        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService);
     }
 
     @Test

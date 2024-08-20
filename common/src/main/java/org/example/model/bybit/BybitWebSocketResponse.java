@@ -1,6 +1,7 @@
 package org.example.model.bybit;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Builder;
 import org.example.enums.LoadType;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import static org.example.enums.TickerInterval.getTickerIntervalFromBybitValue;
 
+@Builder
 public record BybitWebSocketResponse<T> (
         String topic,
         List<T> data,
@@ -19,6 +21,7 @@ public record BybitWebSocketResponse<T> (
         String success,
         String conn_id,
         String req_id,
+        // not from websocket parameter
         LoadType loadType
 ) {
     @JsonCreator
@@ -35,6 +38,10 @@ public record BybitWebSocketResponse<T> (
         this.loadType = loadType == null ? LoadType.WEBSOCKET : loadType;
     }
 
+    public BybitWebSocketResponse(String topic, List<T> data, Long timestamp, LoadType loadType) {
+        this(topic, data, timestamp, null, null, null, null, null, null, loadType);
+    }
+
     public BybitWebSocketResponse<T> copy(
             List<T> data,
             LoadType loadType
@@ -42,22 +49,6 @@ public record BybitWebSocketResponse<T> (
         return new BybitWebSocketResponse<>(
                 this.topic,
                 data != null ? data : this.data,
-                this.ts,
-                this.type,
-                this.ret_msg,
-                this.op,
-                this.success,
-                this.conn_id,
-                this.req_id,
-                loadType != null ? loadType : this.loadType
-        );
-    }
-    public BybitWebSocketResponse<T> copy(
-            LoadType loadType
-    ) {
-        return new BybitWebSocketResponse<>(
-                this.topic,
-                this.data,
                 this.ts,
                 this.type,
                 this.ret_msg,
