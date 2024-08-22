@@ -44,7 +44,7 @@ public class KlineProcessorImplTest {
     public void universalCandleProcessor() {
         //given
         String filePath = "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv";
-        BigDecimal expectedResult = new BigDecimal("2342.304");
+        BigDecimal expectedResult = new BigDecimal("1706.702");
         List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
         candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
         MathContext mc = new MathContext(7, RoundingMode.DOWN);
@@ -64,8 +64,8 @@ public class KlineProcessorImplTest {
     @Test
     public void universalCandleProcessorCustomFile() {
         //given
-        String filePath = "src/test/resources/universal_kline_candle_1721433600-1721519940-closed-minutes-1721596603823.csv";
-        BigDecimal expectedResult = new BigDecimal("0");
+        String filePath = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/1722895422_klineCandles_1691257112000-1722879512000.csv";
+        BigDecimal expectedResult = new BigDecimal("7209.392");
         List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
         candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
         MathContext mc = new MathContext(7, RoundingMode.DOWN);

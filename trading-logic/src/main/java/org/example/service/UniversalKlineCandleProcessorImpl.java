@@ -160,7 +160,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         if (ordersData.isNotFreezed()) {
             if (hourCandlesCount < 2 && !ordersData.getParam(ORDERS_CREATED, false)) {
                 return;
-            } else if (hourCandlesCount == 2
+            } else if (hourCandlesCount >= 2
 //                    && isLastMinuteOfHour(candlesTime)
 //                    && candle.getIsKlineClosed()
                     && !ordersData.getParam(ORDERS_CREATED, false)) {

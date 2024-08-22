@@ -23,6 +23,9 @@ public class MoreThanOneHourCandleExists implements UpdateFibaProcessor {
         if (fe.hourCandlesCount() <= 1)
             return;
 
+        if (fe.isClosingHourCandle())
+            fibaCandlesData.addCandle(fe.hourCandle());
+
         if (fe.incomingCandleHigh().compareTo(fe.fibaHigh()) > 0) {
             log.info("""
                         fiba processor MORE THAN ONE HOUR CANDLE: fibaCandlesData update fiba price
