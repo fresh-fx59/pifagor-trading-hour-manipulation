@@ -3,7 +3,10 @@ package org.example.processor.fiba;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.FibaCandlesData;
 import org.example.model.FibaEnviroment;
+import org.example.model.enums.FibaProcessorState;
 
+import static org.example.model.enums.FibaProcessorState.CLEAN_UP_FIBA_DATA;
+import static org.example.model.enums.FibaProcessorState.MORE_THAN_ONE_HOUR_CANDLE;
 import static org.example.utils.FibaHelper.calculateValueForLevel;
 
 /**
@@ -19,10 +22,7 @@ import static org.example.utils.FibaHelper.calculateValueForLevel;
 public class MoreThanOneHourCandleExists implements UpdateFibaProcessor {
 
     @Override
-    public void process(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
-        if (fe.hourCandlesCount() <= 1)
-            return;
-
+    public FibaProcessorState process(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
         if (fe.isClosingHourCandle())
             fibaCandlesData.addCandle(fe.hourCandle());
 
@@ -53,7 +53,9 @@ public class MoreThanOneHourCandleExists implements UpdateFibaProcessor {
                     fe.incomingCandle().getOpenAt().getHour(),
                     fibaCandlesData.fibaPriceLevels(),
                     fe.incomingCandle());
-            fibaCandlesData.cleanUp();
+            return CLEAN_UP_FIBA_DATA;
         }
+
+        return MORE_THAN_ONE_HOUR_CANDLE;
     }
 }

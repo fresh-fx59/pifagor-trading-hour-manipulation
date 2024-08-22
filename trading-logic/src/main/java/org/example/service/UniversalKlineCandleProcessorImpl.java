@@ -2,20 +2,20 @@ package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.enums.*;
-import org.example.model.*;
+import org.example.model.FibaCandlesData;
+import org.example.model.KlineCandle;
+import org.example.model.Order;
+import org.example.model.OrdersData;
 import org.example.model.enums.FibaLevel;
 import org.example.model.enums.OrdersDataParams;
-import org.example.processor.fiba.MoreThanOneHourCandleExists;
-import org.example.processor.fiba.NoHourCandlesProcessor;
-import org.example.processor.fiba.OneHourCandleProcessor;
-import org.example.processor.fiba.UpdateFibaProcessor;
+import org.example.processor.fiba.FibaProcessor;
+import org.example.processor.fiba.FibaProcessorImpl;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
@@ -46,10 +46,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private final FibaCandlesData fibaCandlesData;
     private final OrdersData ordersData;
     private final OrderService orderService;
-    private final List<UpdateFibaProcessor> fibaProcessors = List.of(new NoHourCandlesProcessor(),
-            new OneHourCandleProcessor(),
-            new MoreThanOneHourCandleExists());
-
+    private final FibaProcessor fibaProcessor = new FibaProcessorImpl();
     private final BlockingQueue<KlineCandle> klineCandleQueue;
     private final Boolean isUpdateOrderEnabled;
 
@@ -114,7 +111,9 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         }
         if (isUpdateOrderEnabled && !COLD_START.equals(candle.getLoadType()))
             updateOrder(candle);
-        updateFibaWithProcessor(candle);
+
+        if (hourCandle != null)
+            fibaProcessor.process(candle, hourCandle, fibaCandlesData, ordersData);
     }
 
     /**
@@ -321,35 +320,6 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         hourCandle.setClose(candle.getClose());
 
         log.debug("Hour candle was closed {}. Its data {}", hourCandle.getOpenAt().getHour(), hourCandle);
-    }
-
-    /**
-     * Case 1 there is no hour candles in fiba
-     *   1. check if the hourly candle is opened
-     *   2. check if there is no other candles in FibaCandlesData
-     *   3. check if this candle is closing hour candle
-     *   if all three conditions are met than save hourly candle to FibaCandlesData
-     * Case 2 there is 1 candle in fiba
-     *   1. check that there is one hour candle in fiba
-     *   2. check that candle is close hour
-     *   3. check that fiba 0.5 level is not passed and higher high is passed
-     *     a. YES add candle and update fiba levels
-     *     b. one of conditions is not met - clean up fiba and candles, add candle and update fiba
-     * Case 3 there is more than 1 hour candles in fiba
-     *   1. check that there is more than one candle in fiba
-     *   2. check that candle's high is more than fiba high
-     *     a. YES update fiba levels
-     *     b. NO check if its low is lower than 0.5 fiba
-     *        - NO do nothing
-     *        - YES clean up fiba
-     *  NOTE: this logic is contradicting to Pifagors. This logic require the third
-     */
-    private void updateFibaWithProcessor(KlineCandle candle) {
-        if (hourCandle == null)
-            return;
-
-        final FibaEnviroment fibaEnviroment = new FibaEnviroment(candle, hourCandle, fibaCandlesData, ordersData);
-        fibaProcessors.forEach(processor -> processor.process(fibaEnviroment, fibaCandlesData));
     }
 
     @Override
