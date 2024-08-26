@@ -40,7 +40,7 @@ import static org.example.utils.OrderHelper.roudBigDecimal;
  */
 //todo set risk - how much money could be lost on stop loss order. so we should automatically tune up leverage on each order
 //todo (very important could led to money lose) add second candle low threshold from 0.5 level. This should be done, because sometimes the second candle low is veri close to 0.5 level but th impulse doesn't formed and the situation trigger stop loss order later on
-    //todo add power of the price deviation. for example if the price go high up to 50 percent, so the strategy could behave unpredictable.
+//todo add power of the price deviation. for example if the price go high up to 50 percent, so the strategy could behave unpredictable.
 @Slf4j
 public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, Runnable {
     private final FibaCandlesData fibaCandlesData;

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/bybit-data-grabber/pom.xml" />
+        <option value="$PROJECT_DIR$/clickhouse-flyway/pom.xml" />
+        <option value="$PROJECT_DIR$/postgres-flyway/pom.xml" />
+        <option value="$PROJECT_DIR$/common/pom.xml" />
+        <option value="$PROJECT_DIR$/csv-processor/pom.xml" />
+        <option value="$PROJECT_DIR$/fibonacci-levels/pom.xml" />
+        <option value="$PROJECT_DIR$/trading-api/pom.xml" />
+        <option value="$PROJECT_DIR$/trading-app/pom.xml" />
+        <option value="$PROJECT_DIR$/trading-data-generator/pom.xml" />
+        <option value="$PROJECT_DIR$/trading-logic/pom.xml" />
+        <option value="$PROJECT_DIR$/websocket-server-jakarta/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="21" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="jpab" />
+  </component>
+</project>

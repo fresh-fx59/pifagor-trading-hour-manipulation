@@ -29,7 +29,7 @@ public class FibaProcessorImpl implements FibaProcessor {
                 if (fe.isHourCandleOpened()
                         && fe.isHourCandlesEmpty()
                         && fe.isClosingHourCandle()) {
-                    updateState(noHourProcessor.process(fe, fibaCandlesData));
+                    updateState(noHourProcessor, fe, fibaCandlesData);
                 }
             }
             case ONE_HOUR_CANDLE -> {
@@ -37,16 +37,16 @@ public class FibaProcessorImpl implements FibaProcessor {
                         && fe.hourCandlesCount() == 1
                         && fe.isClosingHourCandle()
                         && fe.isCandleClosed()) {
-                    updateState(oneHourProcessor.process(fe, fibaCandlesData));
+                    updateState(oneHourProcessor, fe, fibaCandlesData);
                 }
             }
             case MORE_THAN_ONE_HOUR_CANDLE -> {
-                if (fe.hourCandlesCount() >= 2) {
-                    updateState(moreThanOneHourCandleProcessor.process(fe, fibaCandlesData));
+                if (fe.hourCandlesCount() > 1) {
+                    updateState(moreThanOneHourCandleProcessor, fe, fibaCandlesData);
                 }
             }
             case CLEAN_UP_FIBA_DATA -> {
-                updateState(cleanUpFibaCandlesData.process(fe, fibaCandlesData));
+                updateState(cleanUpFibaCandlesData, fe, fibaCandlesData);
             }
         }
     }
@@ -64,12 +64,30 @@ public class FibaProcessorImpl implements FibaProcessor {
                     case CLEAN_UP_FIBA_DATA -> NO_HOUR_CANDLES.equals(nextState);
                 };
 
-        if (!isNextStateAllowed) {
+        if (!isNextStateAllowed)
             throw new FibaProcessorIllegalStateException(
                     String.format("State transition from %s to %s is not allowed", currentState, nextState));
-        }
 
-        log.info("fiba processor State transition from {} to {}", currentState, nextState);
         currentState = nextState;
+    }
+
+    private void updateState(UpdateFibaProcessor processor, FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
+        FibaProcessorState nextState = processor.process(fe, fibaCandlesData);
+        if (!currentState.equals(nextState))
+            log.info("""
+                            fiba processor from {} to {}:
+                            hour candles {}, hour of incoming candle {},
+                            fiba data
+                            {}
+                            incoming candle
+                            {}
+                            """,
+                    currentState.getLogDescription(),
+                    nextState.getLogDescription(),
+                    fibaCandlesData.getCandlesCount(),
+                    fe.incomingCandle().getOpenAt().getHour(),
+                    fibaCandlesData.fibaPriceLevels(),
+                    fe.incomingCandle());
+        updateState(nextState);
     }
 }

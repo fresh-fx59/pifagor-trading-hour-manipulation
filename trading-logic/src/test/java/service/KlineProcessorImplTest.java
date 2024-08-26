@@ -4,8 +4,9 @@ import org.example.model.KlineCandle;
 import org.example.service.OrderServiceImpl;
 import org.example.service.UniversalKlineCandleProcessorImpl;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,14 +41,15 @@ public class KlineProcessorImplTest {
         universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService);
     }
 
-    @Test
-    public void universalCandleProcessor() {
+    @ParameterizedTest
+    @CsvSource({"src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv,1612.774",
+            "src/test/resources/1722895422_klineCandles_1691257112000-1722879512000.csv,7430.551"})
+    public void universalCandleProcessor(String filePath, String expectedResultString) {
         //given
-        String filePath = "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv";
-        BigDecimal expectedResult = new BigDecimal("1612.774");
-        List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
+        final BigDecimal expectedResult = new BigDecimal(expectedResultString);
+        final List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
         candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
-        MathContext mc = new MathContext(7, RoundingMode.DOWN);
+        final MathContext mc = new MathContext(7, RoundingMode.DOWN);
 
         //when
         when(orderService.createOrder(any())).then(returnsFirstArg());
@@ -60,26 +62,4 @@ public class KlineProcessorImplTest {
         //then
         assertThat(actualResult).isEqualTo(expectedResult);
     }
-
-    @Test
-    public void universalCandleProcessorCustomFile() {
-        //given
-        String filePath = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/1722895422_klineCandles_1691257112000-1722879512000.csv";
-        BigDecimal expectedResult = new BigDecimal("7430.551");
-        List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
-        candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
-        MathContext mc = new MathContext(7, RoundingMode.DOWN);
-
-        //when
-        when(orderService.createOrder(any())).then(returnsFirstArg());
-        when(orderService.amendOrder(any())).then(returnsFirstArg());
-        doReturn(FILLED).when(orderService).getOrderStatus(any());
-        candlesToProcess.forEach(universalKlineCandleProcessor::processCandleData);
-        BigDecimal actualResult = universalKlineCandleProcessor.getBalance()
-                .subtract(initialBalance, mc);
-
-        //then
-        assertThat(actualResult).isEqualTo(expectedResult);
-    }
-
 }

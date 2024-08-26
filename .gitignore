@@ -25,3 +25,7 @@ replay_pid*
 /fs/volumes/clickhouse/data/
 /fs/volumes/clickhouse/logs/
 /fs/volumes/clickhouse/docker-entrypoint-initdb.d/
+
+# exclude target directory
+target/
+target/*
