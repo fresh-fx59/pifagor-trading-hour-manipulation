@@ -3,6 +3,14 @@ volumes:
   clickhouse:
     driver: local
 services:
+  trading-app:
+    build:
+      context: .
+      dockerfile: ./docker/trading-app/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pthm-clickhouse-flyway
   pthm-clickhouse-flyway:
     image: 'clickhouse/clickhouse-server:${CHVER:-latest}'
     user: '101:101'
