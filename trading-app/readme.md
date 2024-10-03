@@ -34,3 +34,9 @@ By default, the app connects to ByBit testnet.
 Flow Chart
 https://drive.google.com/file/d/1DsGdlFlUIqehI0Sz7yMcLbCjXnku1Awi/view?usp=sharing
 
+Multiple docker files in project
+https://stackoverflow.com/questions/27409761/docker-multiple-dockerfiles-in-project?rq=2
+
+Multi module project Dockerfile
+https://stackoverflow.com/questions/51679363/multi-module-maven-project-on-dockers
+
