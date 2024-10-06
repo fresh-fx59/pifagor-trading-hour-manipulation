@@ -5,8 +5,9 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}") {
-                        git branch: "main",
-                        url: "https://github.com/fresh-fx59/pifagor-trading-hour-manipulation.git"
+                        git url: 'https://github.com/fresh-fx59/pifagor-trading-hour-manipulation.git',
+                            branch: 'main',
+                            credentialsId: 'jenkins-repo-token-061025'
                     }
                 }
             }
