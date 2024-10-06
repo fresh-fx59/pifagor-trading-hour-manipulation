@@ -2,6 +2,10 @@
 
 pipeline {
     agent any
+    parameters {
+        booleanParam(name: 'COMPILE', defaultValue: true, description: 'Compile application')
+        booleanParam(name: 'RUN_TEST', defaultValue: true, description: 'Run application tests')
+    }
     tools {
         maven 'maven-3.9.9'
         dockerTool 'docker-24.0.7'
@@ -29,6 +33,9 @@ pipeline {
             }
         }
         stage('MVN Compile') {
+            when {
+                expression { params.COMPILE }
+            }
             steps {
                 script {
                     dir("${WORKSPACE}") {
@@ -38,6 +45,9 @@ pipeline {
             }
         }
         stage('MVN Test') {
+            when {
+                expression { params.RUN_TEST }
+            }
             steps {
                 script {
                     dir("${WORKSPACE}") {
@@ -50,7 +60,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh 'docker build -t trading-app:1.0.0 .'
+                    sh 'docker buildx -t trading-app:1.0.0 .'
                 }
             }
         }
