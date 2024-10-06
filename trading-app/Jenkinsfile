@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone java repo') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        git branch: "main",
+                        url: "https://github.com/fresh-fx59/pifagor-trading-hour-manipulation.git"
+                    }
+                }
+            }
+        }
+        stage('MVN Compile') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        sh "mvn compile"
+                    }
+                }
+            }
+        }
+        stage('MVN Test') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        sh "mvn test"
+                    }
+                }
+            }
+        }
+    }
+}
