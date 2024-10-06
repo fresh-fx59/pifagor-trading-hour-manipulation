@@ -1,0 +1,57 @@
+#!groovy
+
+pipeline {
+    agent any
+    tools {
+        maven 'maven-3.9.9'
+    }
+    stages {
+        stage ('Initialize') {
+            steps {
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                    mvn -v
+                    java -version
+                '''
+            }
+        }
+        stage('Clone java repo') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        git url: 'https://github.com/fresh-fx59/pifagor-trading-hour-manipulation.git',
+                            branch: 'main',
+                            credentialsId: 'jenkins-repo-token-061025'
+                    }
+                }
+            }
+        }
+        stage('MVN Compile') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        sh "mvn compile"
+                    }
+                }
+            }
+        }
+        stage('MVN Test') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        sh "mvn test"
+                    }
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                script {
+                    // Build the Docker image
+                    sh 'docker build -t trading-app:1.0.0 .'
+                }
+            }
+        }
+    }
+}
