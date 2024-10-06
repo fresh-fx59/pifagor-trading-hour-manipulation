@@ -60,7 +60,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh 'docker buildx -t trading-app:1.0.0 .'
+                    sh 'docker build -t trading-app:1.0.0 .'
                 }
             }
         }
