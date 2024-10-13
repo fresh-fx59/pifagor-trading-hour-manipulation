@@ -1,0 +1,56 @@
+#!groovy
+
+pipeline {
+    agent any
+    environment {
+        CLICKHOUSE_DB = "fero_mt"
+        CLICKHOUSE_HOST = "195.133.24.65"
+        CLICKHOUSE_PORT = "8126"
+    }
+    tools {
+        maven 'maven-3.9.9'
+    }
+    stages {
+        stage ('Initialize') {
+            steps {
+                script {
+                    sh '''
+                    whoami
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                    mvn -v
+                    java -version
+                    '''
+                }
+            }
+        }
+        stage('Clone java repo') {
+            steps {
+                script {
+                    dir("${WORKSPACE}") {
+                        git url: 'https://github.com/fresh-fx59/pifagor-trading-hour-manipulation.git',
+                                branch: 'main',
+                                credentialsId: 'jenkins-repo-token-061025'
+                    }
+                }
+            }
+        }
+        stage('MVN Flyway Migrate') {
+            steps {
+                script {
+                    dir("${WORKSPACE}/clickhouse-flyway")
+                    withCredentials([
+                            usernamePassword(credentialsId: 'clickhouse-cred-prod',
+                                    passwordVariable: 'CLICKHOUSE_PASSWORD', usernameVariable: 'CLICKHOUSE_USER'),
+                    ]) {
+                        sh "mvn flyway:migrate \
+                                -Dflyway.password=$CLICKHOUSE_PASSWORD \
+                                -Dflyway.user=$CLICKHOUSE_USER \
+                                -Dflyway.url=jdbc:clickhouse://$CLICKHOUSE_HOST:$CLICKHOUSE_PORT/$CLICKHOUSE_DB \
+                                -Dflyway.placeholders.schemaName=$CLICKHOUSE_DB"
+                    }
+                }
+            }
+        }
+    }
+}
