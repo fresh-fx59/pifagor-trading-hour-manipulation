@@ -2,23 +2,37 @@
 
 pipeline {
     agent any
+    environment {
+        /*dir on remote deployment host*/
+        JENKINS_DATA = "/home/jenkins/jenkins-data"
+
+        /*java app parameters*/
+        BYBIT_API_URL = "https://stream.bybit.com"
+        CLICKHOUSE_DB = "fero_mt"
+        CLICKHOUSE_HOST = "localhost"
+        CLICKHOUSE_PORT = "8126"
+    }
     parameters {
         booleanParam(name: 'COMPILE', defaultValue: true, description: 'Compile application')
         booleanParam(name: 'RUN_TEST', defaultValue: true, description: 'Run application tests')
     }
     tools {
         maven 'maven-3.9.9'
-        dockerTool 'docker-24.0.7'
+        dockerTool 'docker-27.3.1'
     }
     stages {
         stage ('Initialize') {
             steps {
-                sh '''
+                script {
+                    sh '''
+                    whoami
                     echo "PATH = ${PATH}"
                     echo "M2_HOME = ${M2_HOME}"
                     mvn -v
                     java -version
-                '''
+                    docker info
+                    '''
+                }
             }
         }
         stage('Clone java repo') {
@@ -26,8 +40,8 @@ pipeline {
                 script {
                     dir("${WORKSPACE}") {
                         git url: 'https://github.com/fresh-fx59/pifagor-trading-hour-manipulation.git',
-                            branch: 'main',
-                            credentialsId: 'jenkins-repo-token-061025'
+                                branch: 'main',
+                                credentialsId: 'jenkins-repo-token-061025'
                     }
                 }
             }
@@ -51,7 +65,7 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}") {
-                        sh "mvn test"
+                        sh "mvn test -Dorg.slf4j.simpleLogger.defaultLogLevel=error"
                     }
                 }
             }
@@ -60,7 +74,46 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh 'docker build -t trading-app:1.0.0 .'
+                    sh 'docker build -f docker/trading-app/Dockerfile -t trading-app:1.0.0 .'
+                }
+            }
+        }
+        stage('Transfer Image') {
+            steps {
+                script {
+                    // Save the Docker image as a tar file
+                    sh "docker save trading-app:1.0.0 -o trading-app_v1.0.0.tar"
+
+                    // Create folder if not exist
+                    sh "ssh jenkins@195.133.24.65 'mkdir -p $JENKINS_DATA'"
+
+                    // Transfer the tar file to another server
+                    sh "scp trading-app_v1.0.0.tar jenkins@195.133.24.65:$JENKINS_DATA"
+                }
+            }
+        }
+        stage('Deploy on Remote Server') {
+            steps {
+                script {
+                    withCredentials([
+                            string(credentialsId: 'bybit-api-key-t1-prod', variable: 'BYBIT_API_KEY'),
+                            string(credentialsId: 'bybit-secret-t1-prod', variable: 'BYBIT_API_SECRET'),
+                            usernamePassword(credentialsId: 'clickhouse-cred-prod',
+                                    passwordVariable: 'CLICKHOUSE_PASSWORD', usernameVariable: 'CLICKHOUSE_USER'),
+                    ]) {
+                        // Load the image on the remote server and run it
+                        sh "ssh jenkins@195.133.24.65 'docker load -i $JENKINS_DATA/trading-app_v1.0.0.tar \
+                            && docker run \
+                                --env BYBIT_API_KEY=$BYBIT_API_KEY \
+                                --env BYBIT_API_SECRET=$BYBIT_API_SECRET \
+                                --env BYBIT_API_URL=$BYBIT_API_URL \
+                                --env CLICKHOUSE_USER=$CLICKHOUSE_USER \
+                                --env CLICKHOUSE_PASSWORD=$CLICKHOUSE_PASSWORD \
+                                --env CLICKHOUSE_DB=$CLICKHOUSE_DB \
+                                --env CLICKHOUSE_HOST=$CLICKHOUSE_HOST \
+                                --env CLICKHOUSE_PORT=$CLICKHOUSE_PORT \
+                                -d trading-app:1.0.0'"
+                    }
                 }
             }
         }

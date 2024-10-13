@@ -17,7 +17,7 @@ services:
     container_name: pthm-clickhouse-flyway
     hostname: pthm-clickhouse-flyway
     volumes:
-      - ./fs/volumes/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./fs/volumes/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/
       ##- ./fs/volumes/clickhouse/data:/var/lib/clickhouse
       - clickhouse:/var/lib/clickhouse
       - ./fs/volumes/clickhouse/logs:/var/log/clickhouse-server
