@@ -42,7 +42,7 @@ public class ConcurrentQueueTest {
         receiverThread.start();
 
         //then
-        assertThat(messages).isEmpty();
+        assertThat(messages).size().isEqualTo(0);
     }
 
     @Test
