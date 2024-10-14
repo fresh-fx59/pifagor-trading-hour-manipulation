@@ -107,7 +107,7 @@ pipeline {
                                     passwordVariable: 'CLICKHOUSE_PASSWORD', usernameVariable: 'CLICKHOUSE_USER'),
                     ]) {
                         // Check if docker container is running, stop and remove it
-                        sh "ssh ${SERVER_USER}@${SERVER_IP} << EOF \
+                        sh "ssh $REMOTE_USER@$REMOTE_IP << EOF \
                                 # Check if the specific container is running \
                                 if [ \\\$(docker ps -q -f name=$CONTAINER_NAME:$CONTAINER_VERSION) ]; then \
                                     echo \"Container $CONTAINER_NAME:$CONTAINER_VERSION is running. \
