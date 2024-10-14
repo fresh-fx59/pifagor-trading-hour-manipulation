@@ -1,1 +1,1 @@
-FROM clickhouse/clickhouse-server:24.8.5.115-alpine
+FROM clickhouse/clickhouse-server:${CHVER:-latest}
