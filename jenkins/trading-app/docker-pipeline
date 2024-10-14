@@ -5,6 +5,11 @@ pipeline {
     environment {
         /*dir on remote deployment host*/
         JENKINS_DATA = "/home/jenkins/jenkins-data"
+        REMOTE_USER = "jenkins"
+        REMOTE_IP = "195.133.24.65"
+
+        CONTAINER_NAME = "trading-app"
+        CONTAINER_VERSION = "1.0.0"
 
         /*java app parameters*/
         BYBIT_API_URL = "https://stream.bybit.com"
@@ -74,7 +79,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh 'docker build -f docker/trading-app/Dockerfile -t trading-app:1.0.0 .'
+                    sh 'docker build -f docker/trading-app/Dockerfile -t $CONTAINER_NAME:$CONTAINER_VERSION .'
                 }
             }
         }
@@ -82,13 +87,13 @@ pipeline {
             steps {
                 script {
                     // Save the Docker image as a tar file
-                    sh "docker save trading-app:1.0.0 -o trading-app_v1.0.0.tar"
+                    sh "docker save trading-app:1.0.0 -o ${CONTAINER_NAME}_v${CONTAINER_VERSION}.tar"
 
                     // Create folder if not exist
-                    sh "ssh jenkins@195.133.24.65 'mkdir -p $JENKINS_DATA'"
+                    sh "ssh $REMOTE_USER@$REMOTE_IP 'mkdir -p $JENKINS_DATA'"
 
                     // Transfer the tar file to another server
-                    sh "scp trading-app_v1.0.0.tar jenkins@195.133.24.65:$JENKINS_DATA"
+                    sh "scp trading-app_v1.0.0.tar $REMOTE_USER@$REMOTE_IP:$JENKINS_DATA"
                 }
             }
         }
@@ -101,8 +106,22 @@ pipeline {
                             usernamePassword(credentialsId: 'clickhouse-cred-prod',
                                     passwordVariable: 'CLICKHOUSE_PASSWORD', usernameVariable: 'CLICKHOUSE_USER'),
                     ]) {
+                        // Check if docker container is running, stop and remove it
+                        sh "ssh ${SERVER_USER}@${SERVER_IP} << EOF \
+                                # Check if the specific container is running \
+                                if [ \\\$(docker ps -q -f name=$CONTAINER_NAME:$CONTAINER_VERSION) ]; then \
+                                    echo \"Container $CONTAINER_NAME:$CONTAINER_VERSION is running. \
+                                    # Stop the container\
+                                    echo \"Stopping container $CONTAINER_NAME:$CONTAINER_VERSION... \
+                                    docker stop $CONTAINER_NAME:$CONTAINER_VERSION \
+                                    # Start the container\
+                                    echo \"Removing container $CONTAINER_NAME:$CONTAINER_VERSION... \
+                                    docker rm $CONTAINER_NAME:$CONTAINER_VERSION \
+                                fi \
+                                EOF"
+
                         // Load the image on the remote server and run it
-                        sh "ssh jenkins@195.133.24.65 'docker load -i $JENKINS_DATA/trading-app_v1.0.0.tar \
+                        sh "ssh $REMOTE_USER@$REMOTE_IP 'docker load -i $JENKINS_DATA/${CONTAINER_NAME}_v$CONTAINER_VERSION.tar \
                             && docker run \
                                 --env BYBIT_API_KEY=$BYBIT_API_KEY \
                                 --env BYBIT_API_SECRET=$BYBIT_API_SECRET \
@@ -112,7 +131,7 @@ pipeline {
                                 --env CLICKHOUSE_DB=$CLICKHOUSE_DB \
                                 --env CLICKHOUSE_HOST=$CLICKHOUSE_HOST \
                                 --env CLICKHOUSE_PORT=$CLICKHOUSE_PORT \
-                                -d trading-app:1.0.0'"
+                                -d $CONTAINER_NAME:$CONTAINER_VERSION'"
                     }
                 }
             }
