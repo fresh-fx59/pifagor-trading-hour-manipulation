@@ -2,6 +2,8 @@ package org.example.service.websocket.bybit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.config.ConfigLoader;
+import org.example.config.ConfigProperties;
 import org.example.model.BybitKlineDataForStatement;
 
 import java.sql.Connection;
@@ -25,6 +27,7 @@ public class BybitDatabaseWriter implements Runnable {
     private final int batchSize = 50;
     private int batchCounter = 0;
     private final int sleepAfterException = 1000;
+    private final String database = ConfigLoader.get(ConfigProperties.CLICKHOUSE_DB);
 
     @Override
     public void run() {
@@ -99,10 +102,10 @@ public class BybitDatabaseWriter implements Runnable {
         return result;
     }
 
-    private static PreparedStatement getStmt() throws SQLException {
+    private PreparedStatement getStmt() throws SQLException {
         Connection conn = getConnection();
-        return conn.prepareStatement("""
-                    INSERT INTO trading_app.universal_kline_candle (
+        return conn.prepareStatement(String.format("""
+                    INSERT INTO %s.universal_kline_candle (
                     eventTime,
                     startAt,
                     endAt,
@@ -115,6 +118,6 @@ public class BybitDatabaseWriter implements Runnable {
                     isKlineClosed,
                     loadType
                     ) VALUES (fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),fromUnixTimestamp64Milli(?),?,?,?,?,?,?,?,?)
-                    """);
+                    """, database));
     }
 }
