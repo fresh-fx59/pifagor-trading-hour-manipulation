@@ -12,6 +12,7 @@ public class ConcurrentQueueTest {
     @Test
     public void linkedQueueTest() {
         //given
+        boolean shouldRun = true;
         LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<>();
         Thread senderThread = new Thread(() -> {
             int cyclesCount = 5;
@@ -42,6 +43,11 @@ public class ConcurrentQueueTest {
         receiverThread.start();
 
         //then
+        while (shouldRun) {
+            if (messages.isEmpty())
+                shouldRun = false;
+        }
+
         assertThat(messages).size().isEqualTo(0);
     }
 
