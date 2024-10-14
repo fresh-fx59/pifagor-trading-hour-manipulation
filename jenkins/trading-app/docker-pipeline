@@ -14,8 +14,9 @@ pipeline {
         /*java app parameters*/
         BYBIT_API_URL = "https://stream.bybit.com"
         CLICKHOUSE_DB = "fero_mt"
-        CLICKHOUSE_HOST = "localhost"
-        CLICKHOUSE_PORT = "8126"
+        CLICKHOUSE_HOST = "pthm-clickhouse-server-prod"
+        CLICKHOUSE_PORT = "8123"
+        CLICKHOUSE_NETWORK = "pifagor-trading-hour-manipulation_clickhouse_net_prod"
     }
     parameters {
         booleanParam(name: 'COMPILE', defaultValue: true, description: 'Compile application')
@@ -109,19 +110,17 @@ pipeline {
                         // Check if docker container is running, stop and remove it
                         sh "ssh $REMOTE_USER@$REMOTE_IP << EOF \
                                 # Check if the specific container is running \
-                                if [ \\\$(docker ps -q -f name=$CONTAINER_NAME:$CONTAINER_VERSION) ]; then \
-                                    echo \"Container $CONTAINER_NAME:$CONTAINER_VERSION is running. \
-                                    # Stop the container\
-                                    echo \"Stopping container $CONTAINER_NAME:$CONTAINER_VERSION... \
-                                    docker stop $CONTAINER_NAME:$CONTAINER_VERSION \
-                                    # Start the container\
-                                    echo \"Removing container $CONTAINER_NAME:$CONTAINER_VERSION... \
-                                    docker rm $CONTAINER_NAME:$CONTAINER_VERSION \
+                                if [ \\\$(docker ps -q -f name=$CONTAINER_NAME) ]; then \
+                                    echo \"Container $CONTAINER_NAME is running.\" \
+                                    echo \"Stopping container $CONTAINER_NAME...\" \
+                                    docker stop $CONTAINER_NAME \
+                                    echo \"Removing container $CONTAINER_NAME...\" \
+                                    docker rm $CONTAINER_NAME \
                                 fi \
                                 EOF"
 
                         // Load the image on the remote server and run it
-                        sh "ssh $REMOTE_USER@$REMOTE_IP 'docker load -i $JENKINS_DATA/${CONTAINER_NAME}_v$CONTAINER_VERSION.tar \
+                        sh "ssh $REMOTE_USER@$REMOTE_IP 'docker load -i $JENKINS_DATA/${CONTAINER_NAME}_v${CONTAINER_VERSION}.tar \
                             && docker run \
                                 --env BYBIT_API_KEY=$BYBIT_API_KEY \
                                 --env BYBIT_API_SECRET=$BYBIT_API_SECRET \
@@ -131,6 +130,8 @@ pipeline {
                                 --env CLICKHOUSE_DB=$CLICKHOUSE_DB \
                                 --env CLICKHOUSE_HOST=$CLICKHOUSE_HOST \
                                 --env CLICKHOUSE_PORT=$CLICKHOUSE_PORT \
+                                --network=$CLICKHOUSE_NETWORK \
+                                --name $CONTAINER_NAME \
                                 -d $CONTAINER_NAME:$CONTAINER_VERSION'"
                     }
                 }
