@@ -13,7 +13,7 @@ pipeline {
         CONTAINER_VERSION = "1.0.0"
 
         /*java app parameters*/
-        BYBIT_API_URL = "https://stream.bybit.com"
+        BYBIT_API_URL = "https://api.bybit.com"
         CLICKHOUSE_DB = "fero_mt"
         CLICKHOUSE_HOST = "pthm-clickhouse-server-prod"
         CLICKHOUSE_PORT = "8123"
