@@ -29,8 +29,7 @@ import static org.example.model.enums.FibaLevel.*;
 import static org.example.model.enums.OrdersDataParams.ORDERS_CREATED;
 import static org.example.utils.KlineCandleHelper.isFirstMinuteOfHour;
 import static org.example.utils.KlineCandleHelper.isLastMinuteOfHour;
-import static org.example.utils.OrderHelper.generateUUID;
-import static org.example.utils.OrderHelper.roudBigDecimal;
+import static org.example.utils.OrderHelper.*;
 
 /**
  * I should add false tolerance in case of
@@ -56,7 +55,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private final BigDecimal quantityThreshold;
 
     public final static int ROUND_SIGN_PRICE = 3;
-    public final static int ROUND_SIGN_QUANTITY = 4;
+    public final static int ROUND_SIGN_QUANTITY = 3;
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BigDecimal initialBalance,
@@ -246,10 +245,10 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 .ticker(ticker)
                 .orderSide(OrderSide.BUY)
                 .type(OrderType.LIMIT)
-                .quantity(roudBigDecimal(quantity, ROUND_SIGN_QUANTITY))
-                .price(roudBigDecimal(orderPrice, ROUND_SIGN_PRICE))
-                .takeProfit(roudBigDecimal(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_PRICE))
-                .stopLoss(roudBigDecimal(levelPrice.get(ONE), ROUND_SIGN_PRICE))
+                .quantity(roundBigDecimalDown(quantity, ROUND_SIGN_QUANTITY))
+                .price(roundBigDecimalHalfUp(orderPrice, ROUND_SIGN_PRICE))
+                .takeProfit(roundBigDecimalHalfUp(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_PRICE))
+                .stopLoss(roundBigDecimalHalfUp(levelPrice.get(ONE), ROUND_SIGN_PRICE))
                 .customOrderId(SLTP_PREFIX + generateUUID21())
                 .build();
     }

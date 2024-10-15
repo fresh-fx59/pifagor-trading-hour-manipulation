@@ -47,10 +47,10 @@ public class Main {
             put(ENABLE_TEST_MODE, "false");
             put(WEBSOCKET_URL, BybitApiConfig.STREAM_MAINNET_DOMAIN);
             put(QUANTITY_THRESHOLD, "0.05");
-            put(INITIAL_BALANCE, "20.00");
+            put(INITIAL_BALANCE, "100.00");
             put(TICKER, "BTCUSDT");
             put(TICKER_INTERVAL, "1");
-            put(DAYS_TO_RETREIVE_DATA, "2");
+            put(DAYS_TO_RETREIVE_DATA, "6");
         }};
 
         ProcessFactory processFactory = new BybitProcessFactoryImpl(websocketDbQueue, coldStartQueue, preprocessedWebsocketDbQueue,

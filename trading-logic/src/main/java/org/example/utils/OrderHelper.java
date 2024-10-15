@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 
+import static java.math.RoundingMode.DOWN;
+import static java.math.RoundingMode.HALF_UP;
+
 public class OrderHelper {
 
     /**
@@ -25,7 +28,15 @@ public class OrderHelper {
      * @param roundSignQuantity signs after dot
      * @return string representation of big decimal
      */
-    public static String roudBigDecimal(BigDecimal incomingPrice, Integer roundSignQuantity) {
-        return incomingPrice.setScale(roundSignQuantity, RoundingMode.HALF_UP).toPlainString();
+    public static String roundBigDecimalHalfUp(BigDecimal incomingPrice, Integer roundSignQuantity) {
+        return roundBigDecimal(incomingPrice, roundSignQuantity, HALF_UP);
+    }
+
+    public static String roundBigDecimalDown(BigDecimal incomingPrice, Integer roundSignQuantity) {
+        return roundBigDecimal(incomingPrice, roundSignQuantity, DOWN);
+    }
+
+    private static String roundBigDecimal(BigDecimal incomingPrice, Integer roundSignQuantity, RoundingMode roundingMode) {
+        return incomingPrice.setScale(roundSignQuantity, roundingMode).toPlainString();
     }
 }
