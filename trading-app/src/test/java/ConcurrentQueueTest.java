@@ -85,6 +85,6 @@ public class ConcurrentQueueTest {
         executorService.execute(receiverThread);
 
         //then
-        assertThat(messages).isEmpty();
+        assertThat(messages.size()).isEqualTo(0);
     }
 }
