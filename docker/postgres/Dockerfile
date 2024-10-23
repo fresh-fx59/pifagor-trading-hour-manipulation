@@ -1,0 +1,2 @@
+#FROM rapidfort/postgresql:17.0@sha256:f64039bde9897ac8c0818317030d3ae12b14e4b847a01739fd387641837fd7f8
+FROM cgr.dev/chainguard/postgres:latest

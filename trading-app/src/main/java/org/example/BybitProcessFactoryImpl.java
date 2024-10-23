@@ -3,13 +3,16 @@ package org.example;
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import lombok.extern.slf4j.Slf4j;
 import org.example.enums.ProcessFactorySettings;
+import org.example.enums.Profile;
 import org.example.enums.Ticker;
 import org.example.enums.TickerInterval;
 import org.example.model.BybitKlineDataForStatement;
 import org.example.model.KlineCandle;
+import org.example.model.OrderForQueue;
 import org.example.model.bybit.BybitWebSocketResponse;
 import org.example.service.ApiService;
 import org.example.service.BybitWebSocketReader;
+import org.example.service.OrderUpdater;
 import org.example.service.UniversalKlineCandleProcessorImpl;
 import org.example.service.websocket.bybit.BybitColdStartImpl;
 import org.example.service.websocket.bybit.BybitDatabaseWriter;
@@ -28,10 +31,10 @@ import static org.example.mapper.JsonMapper.getMapper;
 @Slf4j
 public class BybitProcessFactoryImpl implements ProcessFactory {
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue;
-    private final BlockingQueue<BybitWebSocketResponse<KlineData>> coldStartQueue;
     private final BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue;
     private final BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
+    private final BlockingQueue<OrderForQueue> orderQueue;
 
     private final BigDecimal initialBalance;
     private final BigDecimal quantityThreshold;
@@ -40,25 +43,27 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final Ticker ticker;
     private final TickerInterval tickerInterval;
     private final int daysToRetreiveData;
+    private final Profile profile;
+
     private Boolean isColdStartRunning = true;
 
     private final ApiService apiService;
     private final BybitWebsocketPreprocessorImpl preprocessor;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(6);
 
     public BybitProcessFactoryImpl(BlockingQueue<BybitWebSocketResponse<KlineData>> websocketQueue,
-                                   BlockingQueue<BybitWebSocketResponse<KlineData>> coldStartQueue,
                                    BlockingQueue<BybitWebSocketResponse<KlineData>> preprocessedWebsocketQueue,
                                    BlockingQueue<BybitKlineDataForStatement> klineDataForDbQueue,
                                    BlockingQueue<KlineCandle> klineCandleQueue,
+                                   BlockingQueue<OrderForQueue> orderQueue,
                                    ApiService apiService,
                                    Map<ProcessFactorySettings, String> properties) {
         this.websocketQueue = websocketQueue;
-        this.coldStartQueue = coldStartQueue;
         this.preprocessedWebsocketQueue = preprocessedWebsocketQueue;
         this.klineDataForDbQueue = klineDataForDbQueue;
         this.klineCandleQueue = klineCandleQueue;
+        this.orderQueue = orderQueue;
         this.apiService = apiService;
 
         this.initialBalance = new BigDecimal(properties.get(INITIAL_BALANCE));
@@ -68,6 +73,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
         this.ticker = Ticker.getTickerFromBybitValue(properties.get(TICKER));
         this.tickerInterval = TickerInterval.getTickerIntervalFromBybitValue(properties.get(TICKER_INTERVAL));
         this.daysToRetreiveData = Integer.parseInt(properties.get(DAYS_TO_RETREIVE_DATA));
+        this.profile = Profile.valueOf(properties.get(PROFILE));
 
         this.preprocessor = new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue, apiService, testModeEnabled, isColdStartRunning);
     }
@@ -97,7 +103,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void processCandles() {
-        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, initialBalance, quantityThreshold, testModeEnabled));
+        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, orderQueue, initialBalance, quantityThreshold, testModeEnabled));
     }
 
     @Override
@@ -116,5 +122,10 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
                         tickerInterval,
                         preprocessor)
         );
+    }
+
+    @Override
+    public void writeOrdersToDb() {
+        executorService.execute(new OrderUpdater(orderQueue, Profile.PROD));
     }
 }

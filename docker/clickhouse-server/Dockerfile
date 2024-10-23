@@ -1,0 +1,1 @@
+FROM clickhouse/clickhouse-server:22.8.20.11-alpine

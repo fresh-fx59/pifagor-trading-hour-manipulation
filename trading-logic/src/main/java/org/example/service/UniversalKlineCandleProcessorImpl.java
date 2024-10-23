@@ -2,10 +2,7 @@ package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.enums.*;
-import org.example.model.FibaCandlesData;
-import org.example.model.KlineCandle;
-import org.example.model.Order;
-import org.example.model.OrdersData;
+import org.example.model.*;
 import org.example.model.enums.FibaLevel;
 import org.example.model.enums.OrdersDataParams;
 import org.example.processor.fiba.FibaProcessor;
@@ -38,7 +35,7 @@ import static org.example.utils.OrderHelper.*;
  *   add order processing logging
  */
 //todo set risk - how much money could be lost on stop loss order. so we should automatically tune up leverage on each order
-//todo (very important could led to money lose) add second candle low threshold from 0.5 level. This should be done, because sometimes the second candle low is veri close to 0.5 level but th impulse doesn't formed and the situation trigger stop loss order later on
+//todo (very important could led to money lose) add second candle low threshold from 0.5 level. This should be done, because sometimes the second candle low is very close to 0.5 level but th impulse doesn't formed and the situation trigger stop loss order later on
 //todo add power of the price deviation. for example if the price go high up to 50 percent, so the strategy could behave unpredictable.
 @Slf4j
 public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, Runnable {
@@ -58,10 +55,11 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     public final static int ROUND_SIGN_QUANTITY = 3;
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
+                                             BlockingQueue<OrderForQueue> orderQueue,
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold,
                                              Boolean testModeEnabled) {
-        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(testModeEnabled), true);
+        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(testModeEnabled, orderQueue), true);
     }
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
@@ -87,8 +85,6 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         this.balance = initialBalance;
         this.quantityThreshold = quantityThreshold;
         this.isUpdateOrderEnabled = isUpdateOrderEnabled;
-
-
     }
 
     @Override

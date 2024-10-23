@@ -1,0 +1,1 @@
+FROM clickhouse/clickhouse-keeper:22.8.20.11

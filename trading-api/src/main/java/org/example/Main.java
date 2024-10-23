@@ -11,10 +11,7 @@ import org.example.config.MyBybitApiTradeRestClient;
 import org.example.enums.OrderCategory;
 import org.example.enums.OrderSide;
 import org.example.enums.OrderType;
-import org.example.model.Kline;
-import org.example.model.MarketData;
-import org.example.model.MarketDataCsv;
-import org.example.model.Order;
+import org.example.model.*;
 import org.example.service.ApiService;
 import org.example.service.BybitApiServiceImpl;
 import org.example.service.OrderService;
@@ -24,6 +21,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 
 import static org.example.enums.Ticker.BTCUSDT;
 import static org.example.mapper.JsonMapper.getMapper;
@@ -31,6 +29,8 @@ import static org.example.mapper.JsonMapper.getMapper;
 @Slf4j
 public class Main {
     public static void main(String[] args) throws IllegalAccessException, InstantiationException, IOException {
+        final BlockingQueue<Order> orderQueue;
+
         log.info("trading-api starting");
 
         //showInfo();
@@ -43,8 +43,8 @@ public class Main {
         log.info("trading-api end");
     }
 
-    private void orderManipulation() {
-        OrderService orderService = new OrderServiceImpl(false);
+    private void orderManipulation(BlockingQueue<OrderForQueue> orderQueue) {
+        OrderService orderService = new OrderServiceImpl(false, orderQueue);
         Order order = Order.builder()
                 .category(OrderCategory.LINEAR)
                 .ticker(BTCUSDT)

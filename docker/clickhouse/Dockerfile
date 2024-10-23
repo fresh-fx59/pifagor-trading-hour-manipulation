@@ -1,1 +1,0 @@
-FROM clickhouse/clickhouse-server:${CHVER:-latest}

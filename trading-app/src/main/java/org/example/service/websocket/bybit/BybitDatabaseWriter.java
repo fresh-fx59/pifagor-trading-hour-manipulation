@@ -2,8 +2,8 @@ package org.example.service.websocket.bybit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.config.ClickhouseConfigPropertiesImpl;
 import org.example.config.ConfigLoader;
-import org.example.config.ConfigProperties;
 import org.example.model.BybitKlineDataForStatement;
 
 import java.sql.Connection;
@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import static org.example.config.ConfigClickhouseDataSource.getConnection;
+import static org.example.config.ConfigClickhouseDataSource.getClickhouseConnection;
 import static org.example.util.ConcurrencyHelper.sleepMillis;
 
 @Slf4j
@@ -27,7 +27,7 @@ public class BybitDatabaseWriter implements Runnable {
     private final int batchSize = 50;
     private int batchCounter = 0;
     private final int sleepAfterException = 1000;
-    private final String database = ConfigLoader.get(ConfigProperties.CLICKHOUSE_DB);
+    private final String database = ConfigLoader.get(ClickhouseConfigPropertiesImpl.CLICKHOUSE_DB);
 
     @Override
     public void run() {
@@ -103,7 +103,7 @@ public class BybitDatabaseWriter implements Runnable {
     }
 
     private PreparedStatement getStmt() throws SQLException {
-        Connection conn = getConnection();
+        Connection conn = getClickhouseConnection();
         return conn.prepareStatement(String.format("""
                     INSERT INTO %s.universal_kline_candle (
                     eventTime,

@@ -9,4 +9,5 @@ public enum ProcessFactorySettings {
     TICKER_INTERVAL,
     DAYS_TO_RETREIVE_DATA,
     SHOW_CANDLES,
+    PROFILE,
 }

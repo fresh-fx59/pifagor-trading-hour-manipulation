@@ -2,20 +2,27 @@ version: '3.8'
 volumes:
   clickhouse:
     driver: local
+  postgres_data:
+networks:
+  pthm_net_local:
+    driver: bridge
+
 services:
-  trading-app:
-    build:
-      context: .
-      dockerfile: ./docker/trading-app/Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - pthm-clickhouse-flyway
-  pthm-clickhouse-flyway:
-    image: 'clickhouse/clickhouse-server:${CHVER:-latest}'
-    user: '101:101'
-    container_name: pthm-clickhouse-flyway
-    hostname: pthm-clickhouse-flyway
+#  trading-app:
+#    build:
+#      context: .
+#      dockerfile: ./docker/trading-app/Dockerfile
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - pthm-clickhouse-server
+#      - pthm-postgres
+#    networks:
+#      - pthm_net_local
+  pthm-clickhouse-server:
+    image: 'myclickhouse-server:${CHVER}'
+    container_name: pthm-clickhouse-server
+    hostname: pthm-clickhouse-server
     volumes:
       - ./fs/volumes/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/
       - ./fs/volumes/clickhouse/data:/var/lib/clickhouse
@@ -27,26 +34,32 @@ services:
       - '8125:8123'
       - '127.0.0.1:9004:9000'
     depends_on:
-      - pthm-clickhouse-flyway-keeper
-  pthm-clickhouse-flyway-keeper:
-    image: 'clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}'
-    user: '101:101'
-    container_name: pthm-clickhouse-flyway-keeper
-    hostname: pthm-clickhouse-flyway-keeper
+      - pthm-clickhouse-keeper
+    networks:
+      - pthm_net_local
+  pthm-clickhouse-keeper:
+    image: 'myclickhouse-keeper:${CHKVER}'
+    container_name: pthm-clickhouse-keeper
+    hostname: pthm-clickhouse-keeper
     volumes:
       - ./fs/volumes/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
     ports:
       - '127.0.0.1:9185:9181'
-#  db:
-#    image: postgres:16.3-alpine3.20
-#    container_name: PTHM-postgres
-#    ports:
-#      - "5435:5432"
-#    environment:
-#      - POSTGRES_USER=postgres
-#      - POSTGRES_PASSWORD=postgres
-#      - POSTGRES_DB=pthm
-#      - TZ=UTC
-#      - PGTZ=UTC
-#    volumes:
-#      - ./data/postgres/:/var/lib/postgresql/data
+    networks:
+      - pthm_net_local
+  pthm-postgres:
+#    image: 'myrapidfortpostgres:17.0'
+    image: 'mychainguardpostgres:16.0'
+    container_name: pthm-postgres
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+      - POSTGRES_DB=${PG_DATABASE}
+      - TZ=UTC
+      - PGTZ=UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pthm_net_local

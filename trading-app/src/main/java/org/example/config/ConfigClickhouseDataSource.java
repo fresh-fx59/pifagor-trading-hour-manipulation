@@ -12,9 +12,9 @@ public class ConfigClickhouseDataSource {
     private static final HikariDataSource ds;
 
     static {
-        config.setJdbcUrl(ConfigLoader.get(ConfigProperties.CLICKHOUSE_URL));
-        config.setUsername(ConfigLoader.get(ConfigProperties.CLICKHOUSE_USER));
-        config.setPassword(ConfigLoader.get(ConfigProperties.CLICKHOUSE_PASSWORD));
+        config.setJdbcUrl(ConfigLoader.get(ClickhouseConfigPropertiesImpl.CLICKHOUSE_URL));
+        config.setUsername(ConfigLoader.get(ClickhouseConfigPropertiesImpl.CLICKHOUSE_USER));
+        config.setPassword(ConfigLoader.get(ClickhouseConfigPropertiesImpl.CLICKHOUSE_PASSWORD));
         config.addDataSourceProperty( "cachePrepStmts" , "true" );
         config.addDataSourceProperty( "prepStmtCacheSize" , "250" );
         config.addDataSourceProperty( "prepStmtCacheSqlLimit" , "2048" );
@@ -29,7 +29,7 @@ public class ConfigClickhouseDataSource {
 
     private ConfigClickhouseDataSource() {}
 
-    public static Connection getConnection() throws SQLException {
+    public static Connection getClickhouseConnection() throws SQLException {
         return ds.getConnection();
     }
 }
