@@ -123,7 +123,7 @@ public class OrderUpdater implements Runnable, AutoCloseable {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement findByOrderIdStatement = getFindByOrderIdStatement(conn)) {
             findByOrderIdStatement.setString(1, orderForQueue.getOrder().getOrderId());
-            ResultSet rs = findByOrderIdStatement.getResultSet();
+            ResultSet rs = findByOrderIdStatement.executeQuery();
             if (rs.next())
                 return Optional.of(rs.getLong("id"));
         } catch (SQLException e) {
@@ -137,7 +137,7 @@ public class OrderUpdater implements Runnable, AutoCloseable {
         final String sql = String.format("""
                 SELECT *
                 FROM %s
-                WHERE id=?
+                WHERE order_id=?
                 """, tableName);
         return conn.prepareStatement(sql);
     }
@@ -166,7 +166,7 @@ public class OrderUpdater implements Runnable, AutoCloseable {
                             error_message=?,
                             created_by=?,
                             updated_at=?
-                            WHERE id=?"
+                            WHERE id=?
                     """, tableName);
         return conn.prepareStatement(sql);
     }

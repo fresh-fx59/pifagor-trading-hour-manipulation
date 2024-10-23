@@ -72,6 +72,10 @@ public class OrderUpdaterTest {
     @Test
     public void createOrder() throws Exception {
         // given
+        final int waitingTimeMaxSec = 2;
+        final int sleepTimeMillis = 100;
+        int queueEmptyCheckCounter = 0;
+
         final String orderId = "12345";
         final Order order = Order.builder()
                 .category(OrderCategory.SPOT)
@@ -92,22 +96,19 @@ public class OrderUpdaterTest {
         final String sql = "SELECT * FROM order_flow";
 
         // when
-        Thread runnableThread = new Thread(new OrderUpdater(queue, TEST));
+        final OrderUpdater orderUpdater = new OrderUpdater(queue, TEST);
+        Thread runnableThread = new Thread(orderUpdater);
+        queue.put(orderForQueue);
         runnableThread.start();
 
-        queue.put(orderForQueue);
-
-        while (!queue.isEmpty()) {
-            Thread.sleep(100);
-            log.info("waiting for thread to be empty...");
+        while (!queue.isEmpty() && queueEmptyCheckCounter++ < waitingTimeMaxSec * 10) {
+            Thread.sleep(sleepTimeMillis);
+            log.info("waiting for queue to be empty for {} milliseconds...", sleepTimeMillis);
         }
 
-        runnableThread.interrupt();
-
-        while (!runnableThread.isInterrupted()) {
-            Thread.sleep(100);
-            log.info("waiting for thread to be interrupted...");
-        }
+        orderUpdater.close();
+        log.info("waiting for the thread to join, no more than {} seconds...", waitingTimeMaxSec);
+        runnableThread.join(waitingTimeMaxSec);
 
         // then
         try (Connection connection = dataSource.getConnection();
@@ -122,6 +123,10 @@ public class OrderUpdaterTest {
     @Test
     public void updateOrder() throws Exception {
         // given
+        final int waitingTimeMaxSec = 2;
+        final int sleepTimeMillis = 100;
+        int queueEmptyCheckCounter = 0;
+
         final String orderId = "12345";
         final Order orderForCreate = Order.builder()
                 .category(OrderCategory.SPOT)
@@ -159,23 +164,20 @@ public class OrderUpdaterTest {
         final String sql = "SELECT * FROM order_flow";
 
         // when
-        Thread runnableThread = new Thread(new OrderUpdater(queue, TEST));
-        runnableThread.start();
-
+        final OrderUpdater orderUpdater = new OrderUpdater(queue, TEST);
+        Thread runnableThread = new Thread(orderUpdater);
         queue.put(orderForCreateForQueue);
         queue.put(orderForUpdateForQueue);
+        runnableThread.start();
 
-        while (!queue.isEmpty()) {
-            Thread.sleep(100);
-            log.info("waiting for thread to be empty...");
+        while (!queue.isEmpty() && queueEmptyCheckCounter++ < waitingTimeMaxSec * 10) {
+            Thread.sleep(sleepTimeMillis);
+            log.info("waiting for queue to be empty for {} milliseconds...", sleepTimeMillis);
         }
 
-        runnableThread.interrupt();
-
-        while (!runnableThread.isInterrupted()) {
-            Thread.sleep(100);
-            log.info("waiting for thread to be interrupted...");
-        }
+        orderUpdater.close();
+        log.info("waiting for the thread to join, no more than {} seconds...", waitingTimeMaxSec);
+        runnableThread.join(waitingTimeMaxSec);
 
         // then
         try (Connection connection = dataSource.getConnection();
