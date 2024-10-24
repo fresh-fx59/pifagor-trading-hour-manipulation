@@ -9,13 +9,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ConcurrentQueueTest {
+    private final int waitingTimeMaxMs = 2000;
+    final int sleepTimeMillis = 100;
+
     @Test
-    public void linkedQueueTest() {
+    public void linkedQueueTest() throws InterruptedException {
         //given
         boolean shouldRun = true;
         LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<>();
+        int cyclesCount = 5;
         Thread senderThread = new Thread(() -> {
-            int cyclesCount = 5;
             for(int i = 0; i < cyclesCount; i++) {
                 try {
                     final String message = "message " + i;
@@ -27,7 +30,7 @@ public class ConcurrentQueueTest {
             }
         });
         Thread receiverThread = new Thread(() -> {
-            while (true) {
+            for(int i = 0; i < cyclesCount; i++) {
                 try {
                     final String message = messages.take();
                     log.info(message + " was taken");
@@ -37,24 +40,26 @@ public class ConcurrentQueueTest {
             }
         });
 
-
         //when
         senderThread.start();
         receiverThread.start();
 
         //then
-        while (shouldRun) {
-            if (messages.isEmpty())
-                shouldRun = false;
+        while (!messages.isEmpty()) {
+            Thread.sleep(sleepTimeMillis);
+            log.info("waiting for queue to be empty for {} milliseconds...", sleepTimeMillis);
         }
+
+        senderThread.join(waitingTimeMaxMs);
+        receiverThread.join(waitingTimeMaxMs);
 
         assertThat(messages).size().isEqualTo(0);
     }
 
     @Test
-    public void linkedQueueThreadPoolTest() {
+    public void linkedQueueThreadPoolTest() throws InterruptedException {
         //given
-        LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<>();
+        final LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<>();
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
         Thread senderThread = new Thread(() -> {
             int cyclesCount = 5;
@@ -83,6 +88,14 @@ public class ConcurrentQueueTest {
         //when
         executorService.execute(senderThread);
         executorService.execute(receiverThread);
+
+        while (!messages.isEmpty()) {
+            Thread.sleep(sleepTimeMillis);
+            log.info("waiting for queue to be empty for {} milliseconds...", sleepTimeMillis);
+        }
+
+        senderThread.join(waitingTimeMaxMs);
+        receiverThread.join(waitingTimeMaxMs);
 
         //then
         assertThat(messages.size()).isEqualTo(0);
