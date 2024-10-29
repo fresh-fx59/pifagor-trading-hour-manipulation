@@ -28,3 +28,4 @@ replay_pid*
 # exclude target directory
 target/
 target/*
+/.idea/

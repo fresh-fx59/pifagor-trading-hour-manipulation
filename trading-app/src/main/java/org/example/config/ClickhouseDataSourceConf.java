@@ -6,7 +6,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class ConfigClickhouseDataSource {
+public class ClickhouseDataSourceConf {
 
     private static final HikariConfig config = new HikariConfig();
     private static final HikariDataSource ds;
@@ -27,7 +27,7 @@ public class ConfigClickhouseDataSource {
         ds = new HikariDataSource( config );
     }
 
-    private ConfigClickhouseDataSource() {}
+    private ClickhouseDataSourceConf() {}
 
     public static Connection getClickhouseConnection() throws SQLException {
         return ds.getConnection();

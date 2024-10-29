@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.config.MyBybitApiTradeRestClient;
 import org.example.enums.OrderStatus;
+import org.example.enums.Profile;
 import org.example.mapper.OrderMapper;
 import org.example.model.Order;
 import org.example.model.OrderForQueue;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.concurrent.BlockingQueue;
 
 import static org.example.enums.OrderStatus.*;
+import static org.example.enums.Profile.TEST;
 import static org.example.mapper.JsonMapper.getMapper;
 
 @RequiredArgsConstructor
@@ -27,13 +29,13 @@ public class OrderServiceImpl implements OrderService {
     private final static String SUCCESS_RET_CODE = "0";
     private final OrderMapper orderMapper = Mappers.getMapper(OrderMapper.class);
 
-    private final Boolean testModeEnabled;
+    private final Profile profile;
     private final BlockingQueue<OrderForQueue> orderQueue;
 
 
     @Override
     public Order createOrder(Order order) {
-        if (testModeEnabled)
+        if (TEST.equals(profile))
             return order;
 
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequest(order);
@@ -46,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order amendOrder(Order order) {
-        if (testModeEnabled)
+        if (TEST.equals(profile))
             return order;
 
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequestAmend(order);
@@ -59,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void cancelOrder(Order order) {
-        if (testModeEnabled)
+        if (TEST.equals(profile))
             return;
 
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequestCancel(order);

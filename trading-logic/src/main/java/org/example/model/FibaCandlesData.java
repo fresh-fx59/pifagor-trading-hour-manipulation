@@ -44,7 +44,7 @@ public record FibaCandlesData(HashMap<FibaLevel, BigDecimal> fibaPriceLevels,
         return this.fibaPriceLevels.get(FibaLevel.ONE);
     }
 
-    public BigDecimal getHigh() {
+    public BigDecimal getLevel0() {
         return this.fibaPriceLevels.get(FibaLevel.ZERO);
     }
 

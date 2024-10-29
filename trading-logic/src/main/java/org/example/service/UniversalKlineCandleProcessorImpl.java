@@ -1,6 +1,8 @@
 package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.dao.FibaDAO;
+import org.example.dao.FibaDAOImpl;
 import org.example.enums.*;
 import org.example.model.*;
 import org.example.model.enums.FibaLevel;
@@ -18,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static org.example.enums.LoadType.COLD_START;
 import static org.example.enums.OrderStatus.FILLED;
+import static org.example.enums.Profile.PROD;
 import static org.example.enums.TickerInterval.ONE_HOUR;
 import static org.example.enums.TickerInterval.ONE_MINUTE;
 import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
@@ -42,14 +45,13 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private final FibaCandlesData fibaCandlesData;
     private final OrdersData ordersData;
     private final OrderService orderService;
-    private final FibaProcessor fibaProcessor = new FibaProcessorImpl();
+    private final FibaProcessor fibaProcessor;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
-    private final Boolean isUpdateOrderEnabled;
-
 
     private KlineCandle hourCandle;
     private BigDecimal balance;
     private final BigDecimal quantityThreshold;
+    private final Profile profile;
 
     public final static int ROUND_SIGN_PRICE = 3;
     public final static int ROUND_SIGN_QUANTITY = 3;
@@ -58,22 +60,19 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                                              BlockingQueue<OrderForQueue> orderQueue,
                                              BigDecimal initialBalance,
                                              BigDecimal quantityThreshold,
-                                             Boolean testModeEnabled) {
-        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(testModeEnabled, orderQueue), true);
+                                             Profile profile) {
+        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(profile, orderQueue), profile,
+                new FibaDAOImpl(profile));
     }
 
-    public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
-                                             BigDecimal initialBalance,
-                                             BigDecimal quantityThreshold,
-                                             OrderService orderService) {
-        this(klineCandleQueue, initialBalance, quantityThreshold, orderService, true);
-    }
-
-    public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
-                                             BigDecimal initialBalance,
-                                             BigDecimal quantityThreshold,
-                                             OrderService orderService,
-                                             Boolean isUpdateOrderEnabled) {
+    public UniversalKlineCandleProcessorImpl(
+            BlockingQueue<KlineCandle> klineCandleQueue,
+            BigDecimal initialBalance,
+            BigDecimal quantityThreshold,
+            OrderService orderService,
+            Profile profile,
+            FibaDAO fibaDAO
+    ) {
         this.klineCandleQueue = klineCandleQueue;
         this.fibaCandlesData = new FibaCandlesData(setZeroFibaPriceLevels(), new LinkedList<>());
         this.orderService = orderService;
@@ -84,7 +83,8 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 new Order());
         this.balance = initialBalance;
         this.quantityThreshold = quantityThreshold;
-        this.isUpdateOrderEnabled = isUpdateOrderEnabled;
+        this.fibaProcessor = new FibaProcessorImpl(fibaDAO);
+        this.profile = profile;
     }
 
     @Override
@@ -104,7 +104,7 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         } else {
             updateHourCandle(candle);
         }
-        if (isUpdateOrderEnabled && !COLD_START.equals(candle.getLoadType()))
+        if (PROD.equals(profile) && !COLD_START.equals(candle.getLoadType()))
             updateOrder(candle);
 
         if (hourCandle != null)

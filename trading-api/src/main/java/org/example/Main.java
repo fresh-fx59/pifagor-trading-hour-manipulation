@@ -11,6 +11,7 @@ import org.example.config.MyBybitApiTradeRestClient;
 import org.example.enums.OrderCategory;
 import org.example.enums.OrderSide;
 import org.example.enums.OrderType;
+import org.example.enums.Profile;
 import org.example.model.*;
 import org.example.service.ApiService;
 import org.example.service.BybitApiServiceImpl;
@@ -44,7 +45,7 @@ public class Main {
     }
 
     private void orderManipulation(BlockingQueue<OrderForQueue> orderQueue) {
-        OrderService orderService = new OrderServiceImpl(false, orderQueue);
+        OrderService orderService = new OrderServiceImpl(Profile.PROD, orderQueue);
         Order order = Order.builder()
                 .category(OrderCategory.LINEAR)
                 .ticker(BTCUSDT)

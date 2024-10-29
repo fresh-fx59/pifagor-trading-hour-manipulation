@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import static org.example.config.ConfigClickhouseDataSource.getClickhouseConnection;
+import static org.example.config.ClickhouseDataSourceConf.getClickhouseConnection;
 import static org.example.util.ConcurrencyHelper.sleepMillis;
 
 @Slf4j

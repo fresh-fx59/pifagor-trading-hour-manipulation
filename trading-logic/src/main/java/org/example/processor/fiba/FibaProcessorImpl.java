@@ -1,24 +1,30 @@
 package org.example.processor.fiba;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.dao.FibaDAO;
 import org.example.exception.FibaProcessorIllegalStateException;
-import org.example.model.FibaCandlesData;
-import org.example.model.FibaEnviroment;
-import org.example.model.KlineCandle;
-import org.example.model.OrdersData;
+import org.example.model.*;
 import org.example.model.enums.FibaProcessorState;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.example.model.enums.FibaProcessorState.*;
 
 @Slf4j
 public class FibaProcessorImpl implements FibaProcessor {
+    private static final String createdBy = "FibaProcessor";
     private final UpdateFibaProcessor noHourProcessor = new NoHourCandlesProcessor();
     private final UpdateFibaProcessor oneHourProcessor = new OneHourCandleProcessor();
     private final UpdateFibaProcessor moreThanOneHourCandleProcessor = new MoreThanOneHourCandleExists();
     private final UpdateFibaProcessor cleanUpFibaCandlesData = new CleanUpFibaCandlesData();
+    private final FibaDAO fibaDAO;
+
     private FibaProcessorState currentState = NO_HOUR_CANDLES;
+
+    public FibaProcessorImpl(FibaDAO fibaDAO) {
+        this.fibaDAO = fibaDAO;
+    }
 
     @Override
     public void process(KlineCandle incomingCandle, KlineCandle hourCandle, FibaCandlesData fibaCandlesData, OrdersData ordersData) {
@@ -72,8 +78,12 @@ public class FibaProcessorImpl implements FibaProcessor {
     }
 
     private void updateState(UpdateFibaProcessor processor, FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
-        FibaProcessorState nextState = processor.process(fe, fibaCandlesData);
-        if (!currentState.equals(nextState))
+        final BigDecimal fiba0Previous = new BigDecimal(fibaCandlesData.getLevel0().toString());
+        final FibaProcessorState nextState = processor.process(fe, fibaCandlesData);
+        final BigDecimal fiba0Next = fibaCandlesData.getLevel0();
+
+        if (!currentState.equals(nextState)
+                || (MORE_THAN_ONE_HOUR_CANDLE.equals(nextState) && !fiba0Previous.equals(fiba0Next))) {
             log.info("""
                             fiba processor from {} to {}:
                             hour candles {}, hour of incoming candle {},
@@ -88,6 +98,8 @@ public class FibaProcessorImpl implements FibaProcessor {
                     fe.incomingCandle().getOpenAt().getHour(),
                     fibaCandlesData.fibaPriceLevels(),
                     fe.incomingCandle());
+            fibaDAO.save(new FibaEntity(currentState, nextState, fe, fibaCandlesData, createdBy));
+        }
         updateState(nextState);
     }
 }

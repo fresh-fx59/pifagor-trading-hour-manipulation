@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static org.example.enums.LoadType.UNKNOWN;
 import static org.example.util.TimeHelper.fromUnixToLocalDateTimeUtc;
 
 @Data
@@ -31,7 +32,7 @@ public class KlineCandle {
     private TickerInterval tickerInterval;
     private Ticker ticker;
     private LocalDateTime eventTime;
-    private LoadType loadType;
+    private LoadType loadType = UNKNOWN;
     //private ZoneOffset s = UTC;
 
     /**

@@ -1,5 +1,7 @@
 package service;
 
+import org.example.dao.FibaDAOImpl;
+import org.example.enums.Profile;
 import org.example.model.KlineCandle;
 import org.example.service.OrderServiceImpl;
 import org.example.service.UniversalKlineCandleProcessorImpl;
@@ -21,8 +23,7 @@ import static org.example.CsvReader.getCandlesFromFile;
 import static org.example.enums.OrderStatus.FILLED;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class KlineProcessorImplTest {
@@ -32,13 +33,14 @@ public class KlineProcessorImplTest {
 
     @Mock
     private OrderServiceImpl orderService;
+    @Mock
+    private FibaDAOImpl fibaDAO;
 
     private UniversalKlineCandleProcessorImpl universalKlineCandleProcessor;
 
-
     @BeforeEach
     public void init() {
-        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService);
+        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService, Profile.PROD, fibaDAO);
     }
 
     @ParameterizedTest
@@ -52,6 +54,7 @@ public class KlineProcessorImplTest {
         final MathContext mc = new MathContext(7, RoundingMode.DOWN);
 
         //when
+        doNothing().when(fibaDAO).save(any());
         when(orderService.createOrder(any())).then(returnsFirstArg());
         when(orderService.amendOrder(any())).then(returnsFirstArg());
         doReturn(FILLED).when(orderService).getOrderStatus(any());

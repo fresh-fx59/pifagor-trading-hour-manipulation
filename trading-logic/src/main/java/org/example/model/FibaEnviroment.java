@@ -37,7 +37,7 @@ public record FibaEnviroment(
                 incomingCandle.getHigh(),
                 hourCandle.getLow(),
                 fibaCandlesData.getLevel05(),
-                fibaCandlesData.getHigh(),
+                fibaCandlesData.getLevel0(),
                 fibaCandlesData.getLow(),
                 incomingCandle.getIsKlineClosed(),
                 incomingCandle,

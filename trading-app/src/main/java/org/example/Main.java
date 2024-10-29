@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.example.config.ConfigUponAppStart.configApp;
+import static org.example.config.UponAppStartConf.configApp;
 import static org.example.enums.ProcessFactorySettings.*;
 
 

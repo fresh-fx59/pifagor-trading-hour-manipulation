@@ -2,6 +2,7 @@ package org.example;
 
 import com.bybit.api.client.domain.websocket_message.public_channel.KlineData;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dao.OrderDAOImpl;
 import org.example.enums.ProcessFactorySettings;
 import org.example.enums.Profile;
 import org.example.enums.Ticker;
@@ -103,7 +104,7 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void processCandles() {
-        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, orderQueue, initialBalance, quantityThreshold, testModeEnabled));
+        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, orderQueue, initialBalance, quantityThreshold, profile));
     }
 
     @Override
@@ -126,6 +127,6 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void writeOrdersToDb() {
-        executorService.execute(new OrderUpdater(orderQueue, Profile.PROD));
+        executorService.execute(new OrderUpdater(orderQueue, new OrderDAOImpl(profile)));
     }
 }

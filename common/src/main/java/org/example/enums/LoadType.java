@@ -5,4 +5,5 @@ public enum LoadType {
     REST,
     TEST_WEBSOCKET,
     COLD_START,
+    UNKNOWN,
 }

@@ -2,6 +2,7 @@ package service;
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dao.OrderDAOImpl;
 import org.example.enums.*;
 import org.example.model.Order;
 import org.example.model.OrderForQueue;
@@ -20,7 +21,7 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.example.config.ConfigPostgresDataSource.getPostgresDataSource;
+import static org.example.config.PostgresDataSourceConf.getPostgresDataSource;
 import static org.example.enums.Profile.TEST;
 
 @Slf4j
@@ -96,7 +97,7 @@ public class OrderUpdaterTest {
         final String sql = "SELECT * FROM order_flow";
 
         // when
-        final OrderUpdater orderUpdater = new OrderUpdater(queue, TEST);
+        final OrderUpdater orderUpdater = new OrderUpdater(queue, new OrderDAOImpl(TEST));
         Thread runnableThread = new Thread(orderUpdater);
         queue.put(orderForQueue);
         runnableThread.start();
@@ -164,7 +165,7 @@ public class OrderUpdaterTest {
         final String sql = "SELECT * FROM order_flow";
 
         // when
-        final OrderUpdater orderUpdater = new OrderUpdater(queue, TEST);
+        final OrderUpdater orderUpdater = new OrderUpdater(queue, new OrderDAOImpl(TEST));
         Thread runnableThread = new Thread(orderUpdater);
         queue.put(orderForCreateForQueue);
         queue.put(orderForUpdateForQueue);
