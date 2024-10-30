@@ -8,7 +8,7 @@ import org.example.model.*;
 import org.example.model.enums.FibaLevel;
 import org.example.model.enums.OrdersDataParams;
 import org.example.processor.fiba.FibaProcessor;
-import org.example.processor.fiba.FibaProcessorImpl;
+import org.example.processor.fiba.impl.FibaProcessorImpl;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

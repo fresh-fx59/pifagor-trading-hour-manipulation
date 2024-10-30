@@ -1,8 +1,9 @@
-package org.example.processor.fiba;
+package org.example.processor.fiba.state.impl;
 
 import org.example.model.FibaCandlesData;
 import org.example.model.FibaEnviroment;
 import org.example.model.enums.FibaProcessorState;
+import org.example.processor.fiba.state.FibaState;
 
 import static org.example.model.enums.FibaProcessorState.CLEAN_UP_FIBA_DATA;
 import static org.example.model.enums.FibaProcessorState.MORE_THAN_ONE_HOUR_CANDLE;
@@ -17,10 +18,10 @@ import static org.example.utils.FibaHelper.calculateValueForLevel;
  *        - NO do nothing
  *        - YES clean up fiba
  */
-public class MoreThanOneHourCandleExists implements UpdateFibaProcessor {
+public class TwoPlusCandlesState implements FibaState {
 
     @Override
-    public FibaProcessorState process(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
+    public FibaProcessorState getNext(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
         if (fe.isClosingHourCandle())
             fibaCandlesData.addCandle(fe.hourCandle());
 

@@ -1,14 +1,15 @@
-package org.example.processor.fiba;
+package org.example.processor.fiba.state.impl;
 
 import org.example.model.FibaCandlesData;
 import org.example.model.FibaEnviroment;
 import org.example.model.enums.FibaProcessorState;
+import org.example.processor.fiba.state.FibaState;
 
 import static org.example.utils.FibaHelper.calculateValueForLevel;
 
-public class OneHourCandleProcessor implements UpdateFibaProcessor {
+public class OneHourCandleState implements FibaState {
     @Override
-    public FibaProcessorState process(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
+    public FibaProcessorState getNext(FibaEnviroment fe, FibaCandlesData fibaCandlesData) {
         if (fe.hourCandleHigh().compareTo(fe.fibaHigh()) <= 0 // hour candle didn't update the highest point
                 || fe.hourCandleLow().compareTo(fe.fibaFive()) <= 0) // hour candle drop below 0.5 fiba
             return FibaProcessorState.CLEAN_UP_FIBA_DATA;
