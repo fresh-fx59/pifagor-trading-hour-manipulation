@@ -3,27 +3,25 @@ package org.example.model;
 import org.example.enums.Ticker;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import static org.example.model.enums.FibaLevel.*;
 
 public class CandleEnvironment {
-    private KlineCandle incomingCandle;
-    private FibaCandlesData fibaCandlesData;
-    private OrdersData ordersData;
-    private KlineCandle hourCandle;
-    private Ticker ticker;
-    private int hourCandlesCount;
-    private LocalDateTime candlesTime;
-    private BigDecimal fibaLevel05;
-    private BigDecimal fibaLevel0382;
-    private BigDecimal fibaLevel1;
-    private BigDecimal ordersDataFibaLevel0382;
-    private BigDecimal ordersDataFibaLevel1;
-    private BigDecimal ordersDataFibaLevel05;
-    private BigDecimal incomingCandleLow;
-    private BigDecimal incomingCandleHigh;
-    private BigDecimal quantityThreshold;
+    private final KlineCandle incomingCandle;
+    private final FibaCandlesData fibaCandlesData;
+    private final OrdersData ordersData;
+    private final KlineCandle hourCandle;
+    private final Ticker ticker;
+    private final int hourCandlesCount;
+    private final BigDecimal fibaLevel05;
+    private final BigDecimal fibaLevel0382;
+    private final BigDecimal fibaLevel1;
+    private final BigDecimal ordersDataFibaLevel0382;
+    private final BigDecimal ordersDataFibaLevel1;
+    private final BigDecimal ordersDataFibaLevel05;
+    private final BigDecimal incomingCandleLow;
+    private final BigDecimal incomingCandleHigh;
+    private final BigDecimal quantityThreshold;
 
     // Constructor
     public CandleEnvironment(
@@ -39,7 +37,6 @@ public class CandleEnvironment {
         this.hourCandle = hourCandle;
         this.ticker = incomingCandle.getTicker();
         this.hourCandlesCount = fibaCandlesData.getCandlesCount();
-        this.candlesTime = incomingCandle.getOpenAt();
         this.fibaLevel05 = fibaCandlesData.getLevel05();
         this.fibaLevel0382 = fibaCandlesData.getLevel0382();
         this.fibaLevel1 = fibaCandlesData.getLevel1();
@@ -53,7 +50,6 @@ public class CandleEnvironment {
 
     // Getters
     // Record-like Getters
-
     public KlineCandle incomingCandle() {
         return incomingCandle;
     }
@@ -74,14 +70,6 @@ public class CandleEnvironment {
         return ticker;
     }
 
-    public int hourCandlesCount() {
-        return hourCandlesCount;
-    }
-
-    public LocalDateTime candlesTime() {
-        return candlesTime;
-    }
-
     public BigDecimal fibaLevel05() {
         return fibaLevel05;
     }
@@ -94,24 +82,8 @@ public class CandleEnvironment {
         return fibaLevel1;
     }
 
-    public BigDecimal ordersDataFibaLevel0382() {
-        return ordersDataFibaLevel0382;
-    }
-
-    public BigDecimal ordersDataFibaLevel1() {
-        return ordersDataFibaLevel1;
-    }
-
     public BigDecimal ordersDataFibaLevel05() {
         return ordersDataFibaLevel05;
-    }
-
-    public BigDecimal incomingCandleLow() {
-        return incomingCandleLow;
-    }
-
-    public BigDecimal incomingCandleHigh() {
-        return incomingCandleHigh;
     }
 
     public BigDecimal quantityThreshold() {

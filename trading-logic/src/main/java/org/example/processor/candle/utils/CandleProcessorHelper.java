@@ -31,26 +31,6 @@ public class CandleProcessorHelper {
         }
     }
 
-    public static BigDecimal decreaseBalance(Order order, BigDecimal incomingBalance) {
-        BigDecimal stopLossAmount = new BigDecimal(order.getStopLoss()).multiply(new BigDecimal(order.getQuantity()));
-        BigDecimal buyAmount = new BigDecimal(order.getPrice()).multiply(new BigDecimal(order.getQuantity()));
-        BigDecimal lostAmount = buyAmount.subtract(stopLossAmount);
-        return incomingBalance.add(buyAmount).subtract(lostAmount);
-    }
-
-    public static BigDecimal increaseBalance(Order order, BigDecimal incomingBalance) {
-        BigDecimal takeProfitAmount = new BigDecimal(order.getTakeProfit()).multiply(new BigDecimal(order.getQuantity()));
-        return incomingBalance.add(takeProfitAmount);
-    }
-
-    public static BigDecimal updateBalance(Order order, BigDecimal incomingBalance) {
-        if (order.getOrderSide().equals(OrderSide.SELL)) {
-            return incomingBalance.add(new BigDecimal(order.getPrice()).multiply(new BigDecimal(order.getQuantity())));
-        } else {
-            return incomingBalance.subtract(new BigDecimal(order.getPrice()).multiply(new BigDecimal(order.getQuantity())));
-        }
-    }
-
     public static Order prepareCreateOrder(
             Ticker ticker,
             Map<FibaLevel, BigDecimal> levelPrice,
