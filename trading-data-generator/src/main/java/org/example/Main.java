@@ -26,7 +26,7 @@ public class Main {
         log.info("generator starting");
         String filePath = "/Users/a/Documents/projects/pifagor-trading-hour-manipulation/trading-data-generator/src/main/resources/csv/1722895422_klineCandles_1691257112000-1722879512000.csv";
 
-        KlineCandleProcessor candleProcessor = new UniversalKlineCandleProcessorImpl(new LinkedBlockingQueue<>(), new LinkedBlockingQueue<>(), new BigDecimal("31000"), new BigDecimal("0.05"), Profile.TEST);
+        KlineCandleProcessor candleProcessor = new UniversalKlineCandleProcessorImpl(new LinkedBlockingQueue<>(), new LinkedBlockingQueue<>(), new BigDecimal("31000"), new BigDecimal("0.05"), Profile.TEST, 1, 1);
 
         List<KlineCandle> candlesToProcess = new ArrayList<>();
 

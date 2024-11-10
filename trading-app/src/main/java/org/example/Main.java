@@ -46,6 +46,8 @@ public class Main {
             put(TICKER_INTERVAL, "1");
             put(DAYS_TO_RETREIVE_DATA, "2");
             put(PROFILE, profile);
+            put(PERCENT_TO_LOOSE, "20");
+            put(MAX_LEVERAGE, "100");
         }};
 
         final Map<ProcessFactorySettings, String> processFactoryProperties = new HashMap<>() {{
@@ -57,6 +59,8 @@ public class Main {
             put(TICKER_INTERVAL, TickerInterval.ONE_MINUTE.getBybitValue());
             put(DAYS_TO_RETREIVE_DATA, "20");
             put(PROFILE, profile);
+            put(PERCENT_TO_LOOSE, "20");
+            put(MAX_LEVERAGE, "100");
         }};
 
         ProcessFactory processFactory = new BybitProcessFactoryImpl(

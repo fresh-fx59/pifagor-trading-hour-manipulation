@@ -22,11 +22,20 @@ import static org.example.processor.candle.utils.CandleProcessorHelper.*;
 public class CandleProcessorImpl implements CandleProcessor {
     private final OrderService orderService;
     private final BalanceService balanceService;
+    private final int percentOfDepositToLoose;
+    private final int maxLeverage;
     private volatile CandleProcessorState currentState = WAITING_FOR_TWO_CANDLES;
 
-    public CandleProcessorImpl(OrderService orderService, BalanceService balanceService) {
+    public CandleProcessorImpl(
+            OrderService orderService,
+            BalanceService balanceService,
+            int percentOfDepositToLoose,
+            int maxLeverage
+    ) {
         this.orderService = orderService;
         this.balanceService = balanceService;
+        this.percentOfDepositToLoose = percentOfDepositToLoose;
+        this.maxLeverage = maxLeverage;
     }
 
     @Override
@@ -37,7 +46,15 @@ public class CandleProcessorImpl implements CandleProcessor {
             OrdersData ordersData,
             BigDecimal quantityThreshold
     ) {
-        final CandleEnvironment ce = new CandleEnvironment(incomingCandle, fibaCandlesData, ordersData, hourCandle, quantityThreshold);
+        final CandleEnvironment ce = new CandleEnvironment(
+                incomingCandle,
+                fibaCandlesData,
+                ordersData,
+                hourCandle,
+                quantityThreshold,
+                percentOfDepositToLoose,
+                maxLeverage
+        );
 
         switch (currentState) {
             case WAITING_FOR_TWO_CANDLES -> {

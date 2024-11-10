@@ -1,7 +1,11 @@
 package org.example.processor.candle.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.enums.*;
+import org.example.enums.OrderCategory;
+import org.example.enums.OrderSide;
+import org.example.enums.OrderStatus;
+import org.example.enums.OrderType;
+import org.example.enums.Ticker;
 import org.example.model.CandleEnvironment;
 import org.example.model.Order;
 import org.example.model.OrdersData;
@@ -12,14 +16,49 @@ import org.example.service.OrderService;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Map;
+import java.util.Objects;
 
+import static java.math.RoundingMode.DOWN;
 import static org.example.enums.OrderStatus.FILLED;
-import static org.example.model.OrdersData.*;
-import static org.example.model.enums.FibaLevel.*;
-import static org.example.utils.OrderHelper.*;
+import static org.example.model.OrdersData.ROUND_SIGN_PRICE;
+import static org.example.model.OrdersData.ROUND_SIGN_QUANTITY;
+import static org.example.model.OrdersData.SLTP_PREFIX;
+import static org.example.model.enums.FibaLevel.FIVE;
+import static org.example.model.enums.FibaLevel.ONE;
+import static org.example.model.enums.FibaLevel.THREEEIGHTTWO;
+import static org.example.utils.OrderHelper.generateUUID;
+import static org.example.utils.OrderHelper.roundBigDecimalDown;
+import static org.example.utils.OrderHelper.roundBigDecimalHalfUp;
 
 @Slf4j
 public class CandleProcessorHelper {
+    /**
+     * Calculate max possible leverage by (fiba05/(fiba05-fiba1))*risk/100 no more than max leverage. Return 1 if maxLeverage is 1
+     *
+     * @param percentOfDepositToLoose how much money of deposit we can loose
+     * @param maxLeverage set max leverage
+     * @param levelPrice fiba prices
+     * @return leverage
+     */
+    public static BigDecimal calculateLeverageLong(
+            int percentOfDepositToLoose,
+            int maxLeverage,
+            Map<FibaLevel, BigDecimal> levelPrice) {
+        if (maxLeverage == 1)
+            return new BigDecimal(1);
+
+        final MathContext mathContext = new MathContext(3, DOWN);
+        final BigDecimal fibaLevel1 = levelPrice.get(ONE);
+        final BigDecimal fibaLevel05 = levelPrice.get(FIVE);
+        final BigDecimal originalLeverage = new BigDecimal(percentOfDepositToLoose, mathContext)
+                .divide(new BigDecimal(100), mathContext)
+                .multiply(fibaLevel05.divide(fibaLevel05.subtract(fibaLevel1), mathContext))
+                .setScale(0, DOWN);
+        final int preparedLeverage = Integer.parseInt(originalLeverage.toString());
+
+        return new BigDecimal(Math.min(preparedLeverage, maxLeverage));
+    }
+
     public static void cleanUpIfOrderWasFilled(OrderService orderService, OrdersData ordersData) {
         Order shouldBeFilledOrder = ordersData.order();
         OrderStatus orderStatus = orderService.getOrderStatus(shouldBeFilledOrder);
@@ -35,12 +74,18 @@ public class CandleProcessorHelper {
             Ticker ticker,
             Map<FibaLevel, BigDecimal> levelPrice,
             BigDecimal quantityThreshold,
-            BigDecimal balance
+            BigDecimal balance,
+            BigDecimal levarage
     ) {
-        BigDecimal orderPrice = levelPrice.get(FIVE);
-        BigDecimal quantityWOThreshold = balance.divide(orderPrice, MathContext.DECIMAL32);
-        BigDecimal quantity = quantityWOThreshold
+        final BigDecimal orderPrice = levelPrice.get(FIVE);
+        final BigDecimal quantityWOThreshold = balance
+                .multiply(levarage)
+                .divide(orderPrice, MathContext.DECIMAL32);
+        final BigDecimal quantity = quantityWOThreshold
                 .subtract(quantityWOThreshold.multiply(quantityThreshold));
+        final int isLeverage = (Objects.equals(levarage, new BigDecimal(1))) ? 0 : 1;
+        final String customOrderId = SLTP_PREFIX + generateUUID21();
+
         return Order.builder()
                 .category(OrderCategory.LINEAR)
                 .ticker(ticker)
@@ -50,7 +95,8 @@ public class CandleProcessorHelper {
                 .price(roundBigDecimalHalfUp(orderPrice, ROUND_SIGN_PRICE))
                 .takeProfit(roundBigDecimalHalfUp(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_PRICE))
                 .stopLoss(roundBigDecimalHalfUp(levelPrice.get(ONE), ROUND_SIGN_PRICE))
-                .customOrderId(SLTP_PREFIX + generateUUID21())
+                .customOrderId(customOrderId)
+                .isLeverage(isLeverage)
                 .build();
     }
 

@@ -10,4 +10,6 @@ public enum ProcessFactorySettings {
     DAYS_TO_RETREIVE_DATA,
     SHOW_CANDLES,
     PROFILE,
+    PERCENT_TO_LOOSE,
+    MAX_LEVERAGE,
 }

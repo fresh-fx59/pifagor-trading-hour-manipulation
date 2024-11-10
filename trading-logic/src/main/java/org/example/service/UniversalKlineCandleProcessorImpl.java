@@ -4,7 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.dao.FibaDAO;
 import org.example.dao.FibaDAOImpl;
 import org.example.enums.Profile;
-import org.example.model.*;
+import org.example.model.FibaCandlesData;
+import org.example.model.KlineCandle;
+import org.example.model.Order;
+import org.example.model.OrderForQueue;
+import org.example.model.OrdersData;
 import org.example.model.enums.OrdersDataParams;
 import org.example.processor.candle.CandleProcessor;
 import org.example.processor.candle.impl.CandleProcessorImpl;
@@ -47,13 +51,25 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private final BigDecimal quantityThreshold;
     private final Profile profile;
 
-    public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
-                                             BlockingQueue<OrderForQueue> orderQueue,
-                                             BigDecimal initialBalance,
-                                             BigDecimal quantityThreshold,
-                                             Profile profile) {
-        this(klineCandleQueue, initialBalance, quantityThreshold, new OrderServiceImpl(profile, orderQueue), profile,
-                new FibaDAOImpl(profile));
+    public UniversalKlineCandleProcessorImpl(
+            BlockingQueue<KlineCandle> klineCandleQueue,
+            BlockingQueue<OrderForQueue> orderQueue,
+            BigDecimal initialBalance,
+            BigDecimal quantityThreshold,
+            Profile profile,
+            int percentOfDepositToLoose,
+            int maxLeverage
+    ) {
+        this(
+                klineCandleQueue,
+                initialBalance,
+                quantityThreshold,
+                new OrderServiceImpl(profile, orderQueue),
+                profile,
+                new FibaDAOImpl(profile),
+                percentOfDepositToLoose,
+                maxLeverage
+        );
     }
 
     public UniversalKlineCandleProcessorImpl(
@@ -62,7 +78,9 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             BigDecimal quantityThreshold,
             OrderService orderService,
             Profile profile,
-            FibaDAO fibaDAO
+            FibaDAO fibaDAO,
+            int percentOfDepositToLoose,
+            int maxLeverage
     ) {
         this.klineCandleQueue = klineCandleQueue;
         this.fibaCandlesData = new FibaCandlesData(setZeroFibaPriceLevels(), new LinkedList<>());
@@ -74,7 +92,12 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         this.balanceService = new BalanceServiceImpl(initialBalance);
         this.quantityThreshold = quantityThreshold;
         this.fibaProcessor = new FibaProcessorImpl(fibaDAO);
-        this.candleProcessor = new CandleProcessorImpl(orderService, this.balanceService);
+        this.candleProcessor = new CandleProcessorImpl(
+                orderService,
+                this.balanceService,
+                percentOfDepositToLoose,
+                maxLeverage
+        );
         this.profile = profile;
     }
 

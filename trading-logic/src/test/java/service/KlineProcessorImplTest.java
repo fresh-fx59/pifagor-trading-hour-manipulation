@@ -23,7 +23,9 @@ import static org.example.CsvReader.getCandlesFromFile;
 import static org.example.enums.OrderStatus.FILLED;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class KlineProcessorImplTest {
@@ -40,17 +42,44 @@ public class KlineProcessorImplTest {
 
     @BeforeEach
     public void init() {
-        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService, Profile.PROD, fibaDAO);
     }
 
     @ParameterizedTest
     @CsvSource({
             "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv,1610.631"
-//            ,
-//            "src/test/resources/1722895422_klineCandles_1691257112000-1722879512000.csv,7525.294"
+            ,
+            "src/test/resources/1722895422_klineCandles_1691257112000-1722879512000.csv,7525.294"
     })
     public void universalCandleProcessor(String filePath, String expectedResultString) {
         //given
+        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService, Profile.PROD, fibaDAO, 1, 1);
+        final BigDecimal expectedResult = new BigDecimal(expectedResultString);
+        final List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
+        candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));
+        final MathContext mc = new MathContext(7, RoundingMode.DOWN);
+
+        //when
+        doNothing().when(fibaDAO).save(any());
+        when(orderService.createOrder(any())).then(returnsFirstArg());
+        when(orderService.amendOrder(any())).then(returnsFirstArg());
+        doReturn(FILLED).when(orderService).getOrderStatus(any());
+        candlesToProcess.forEach(universalKlineCandleProcessor::processCandleData);
+        BigDecimal actualResult = universalKlineCandleProcessor.getBalance()
+                .subtract(initialBalance, mc);
+
+        //then
+        assertThat(actualResult).isEqualTo(expectedResult);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv,17352.64"
+            ,
+            "src/test/resources/1722895422_klineCandles_1691257112000-1722879512000.csv,144718.8"
+    })
+    public void universalCandleProcessorLeverageTest(String filePath, String expectedResultString) {
+        //given
+        universalKlineCandleProcessor = new UniversalKlineCandleProcessorImpl(linkedBlockingQueue, initialBalance, quantityThreshold, orderService, Profile.PROD, fibaDAO, 20, 100);
         final BigDecimal expectedResult = new BigDecimal(expectedResultString);
         final List<KlineCandle> candlesToProcess = getCandlesFromFile(filePath);
         candlesToProcess.forEach(candle -> candle.setIsKlineClosed(true));

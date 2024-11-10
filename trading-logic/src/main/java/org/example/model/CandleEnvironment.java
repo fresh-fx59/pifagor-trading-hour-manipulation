@@ -1,10 +1,13 @@
 package org.example.model;
 
+import lombok.Getter;
 import org.example.enums.Ticker;
 
 import java.math.BigDecimal;
 
-import static org.example.model.enums.FibaLevel.*;
+import static org.example.model.enums.FibaLevel.FIVE;
+import static org.example.model.enums.FibaLevel.ONE;
+import static org.example.model.enums.FibaLevel.THREEEIGHTTWO;
 
 public class CandleEnvironment {
     private final KlineCandle incomingCandle;
@@ -22,6 +25,10 @@ public class CandleEnvironment {
     private final BigDecimal incomingCandleLow;
     private final BigDecimal incomingCandleHigh;
     private final BigDecimal quantityThreshold;
+    @Getter
+    private final int percentOfDepositToLoose;
+    @Getter
+    private final int maxLeverage;
 
     // Constructor
     public CandleEnvironment(
@@ -29,7 +36,9 @@ public class CandleEnvironment {
             FibaCandlesData fibaCandlesData,
             OrdersData ordersData,
             KlineCandle hourCandle,
-            BigDecimal quantityThreshold
+            BigDecimal quantityThreshold,
+            int percentOfDepositToLoose,
+            int maxLeverage
     ) {
         this.incomingCandle = incomingCandle;
         this.fibaCandlesData = fibaCandlesData;
@@ -46,10 +55,13 @@ public class CandleEnvironment {
         this.incomingCandleLow = incomingCandle.getLow();
         this.incomingCandleHigh = incomingCandle.getHigh();
         this.quantityThreshold = quantityThreshold;
+        this.percentOfDepositToLoose = percentOfDepositToLoose;
+        this.maxLeverage = maxLeverage;
     }
 
     // Getters
     // Record-like Getters
+
     public KlineCandle incomingCandle() {
         return incomingCandle;
     }

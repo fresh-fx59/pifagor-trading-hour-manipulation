@@ -13,7 +13,10 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.example.model.enums.FibaLevel.*;
+import static org.example.model.enums.FibaLevel.FIVE;
+import static org.example.model.enums.FibaLevel.ONE;
+import static org.example.model.enums.FibaLevel.THREEEIGHTTWO;
+import static org.example.processor.candle.utils.CandleProcessorHelper.calculateLeverageLong;
 import static org.example.processor.candle.utils.CandleProcessorHelper.prepareCreateOrder;
 import static org.example.processor.candle.utils.CandleProcessorHelper.updateOrderData;
 
@@ -22,7 +25,8 @@ public class WaitingForTwoCandlesStateImpl implements CandleState {
     @Override
     public CandleProcessorState getNext(CandleEnvironment ce, OrderService orderService, BalanceService balanceService) {
         Map<FibaLevel, BigDecimal> levelPrice = Map.of(THREEEIGHTTWO, ce.fibaLevel0382(), FIVE, ce.fibaLevel05(), ONE, ce.fibaLevel1());
-        Order orderToBePlaced = prepareCreateOrder(ce.ticker(), levelPrice, ce.quantityThreshold(), balanceService.getBalance());
+        final BigDecimal leverage = calculateLeverageLong(ce.getPercentOfDepositToLoose(), ce.getMaxLeverage(), levelPrice);
+        Order orderToBePlaced = prepareCreateOrder(ce.ticker(), levelPrice, ce.quantityThreshold(), balanceService.getBalance(), leverage);
         Order createdOrder = orderService.createOrder(orderToBePlaced);
         updateOrderData(createdOrder, levelPrice, new HashMap<>(), ce.ordersData());
 

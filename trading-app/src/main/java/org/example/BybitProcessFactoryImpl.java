@@ -46,10 +46,12 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
     private final int daysToRetreiveData;
     private final Profile profile;
 
-    private Boolean isColdStartRunning = true;
+    private Boolean isColdStartEnabled = true;
 
     private final ApiService apiService;
     private final BybitWebsocketPreprocessorImpl preprocessor;
+
+    private final Map<ProcessFactorySettings, String> properties;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(6);
 
@@ -76,7 +78,9 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
         this.daysToRetreiveData = Integer.parseInt(properties.get(DAYS_TO_RETREIVE_DATA));
         this.profile = Profile.valueOf(properties.get(PROFILE));
 
-        this.preprocessor = new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue, apiService, testModeEnabled, isColdStartRunning);
+        this.preprocessor = new BybitWebsocketPreprocessorImpl(websocketQueue, preprocessedWebsocketQueue, apiService, testModeEnabled, isColdStartEnabled);
+
+        this.properties = properties;
     }
 
     /**
@@ -104,7 +108,15 @@ public class BybitProcessFactoryImpl implements ProcessFactory {
 
     @Override
     public void processCandles() {
-        executorService.execute(new UniversalKlineCandleProcessorImpl(klineCandleQueue, orderQueue, initialBalance, quantityThreshold, profile));
+        executorService.execute(new UniversalKlineCandleProcessorImpl(
+                klineCandleQueue,
+                orderQueue,
+                initialBalance,
+                quantityThreshold,
+                profile,
+                Integer.parseInt(properties.get(PERCENT_TO_LOOSE)),
+                Integer.parseInt(properties.get(MAX_LEVERAGE))
+        ));
     }
 
     @Override

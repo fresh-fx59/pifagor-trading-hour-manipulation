@@ -27,6 +27,7 @@ public class Order {
     private String customOrderId;
     private String stopLoss;
     private String takeProfit;
+    private Integer isLeverage = 0;
 
     public Order(Order other) {
         if (other != null) {
@@ -40,6 +41,7 @@ public class Order {
             this.customOrderId = other.customOrderId;
             this.stopLoss = other.stopLoss;
             this.takeProfit = other.takeProfit;
+            this.isLeverage = other.isLeverage;
         }
     }
 
@@ -54,5 +56,6 @@ public class Order {
         this.customOrderId = o.getCustomOrderId();
         this.stopLoss = o.getStopLoss();
         this.takeProfit = o.getTakeProfit();
+        this.isLeverage = o.getIsLeverage();
     }
 }

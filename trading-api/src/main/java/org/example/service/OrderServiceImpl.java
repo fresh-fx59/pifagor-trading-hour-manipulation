@@ -37,7 +37,6 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(Order order) {
         if (TEST.equals(profile))
             return order;
-
         TradeOrderRequest tradeOrderRequest = orderMapper.toTradeOrderRequest(order);
         Object orderResponseObject = MyBybitApiTradeRestClient.getBybitApiTradeRestClient().createOrder(tradeOrderRequest);
 
