@@ -67,19 +67,7 @@ public class CandleProcessorImpl implements CandleProcessor {
                 } else if (isOrderFilledTakeProfit(ce)) {
                     updateState(ORDER_FILLED_TAKE_PROFIT.getCandleState(), ce);
                 }
-//                else {
-//                    nextState = ORDER_FREEZED;
-//                }
-//
-//                updateState(ORDER_FREEZED.getCandleState(), ce);
-
             }
-//            case ORDER_FILLED_STOP_LOSS -> {
-//                updateState(ORDER_FILLED_STOP_LOSS.getCandleState(), ce);
-//            }
-//            case ORDER_FILLED_TAKE_PROFIT -> {
-//                updateState(ORDER_FILLED_TAKE_PROFIT.getCandleState(), ce);
-//            }
         }
     }
 
@@ -90,8 +78,8 @@ public class CandleProcessorImpl implements CandleProcessor {
                     case ORDER_CREATED -> List.of(ORDER_CREATED, ORDER_AMENDED, ORDER_FREEZED).contains(nextState);
                     case ORDER_AMENDED -> List.of(ORDER_AMENDED, ORDER_FREEZED).contains(nextState);
                     case ORDER_FREEZED -> List.of(ORDER_FREEZED, WAITING_FOR_TWO_CANDLES, ORDER_FILLED_TAKE_PROFIT, ORDER_FILLED_STOP_LOSS).contains(nextState);
-                    case ORDER_FILLED_TAKE_PROFIT -> WAITING_FOR_TWO_CANDLES.equals(nextState);
-                    case ORDER_FILLED_STOP_LOSS -> WAITING_FOR_TWO_CANDLES.equals(nextState);
+                    case ORDER_FILLED_TAKE_PROFIT, ORDER_FILLED_STOP_LOSS -> throw new StateMachineIllegalStateException(
+                            String.format("State transition from %s to %s is not allowed. %s is wrapped state", currentState, nextState, currentState));
                 };
 
         if (!isNextStateAllowed)

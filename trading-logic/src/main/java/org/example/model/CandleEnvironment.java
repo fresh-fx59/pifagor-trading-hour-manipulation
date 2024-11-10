@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.example.model.enums.FibaLevel.*;
-import static org.example.model.enums.OrdersDataParams.ORDERS_CREATED;
 
 public class CandleEnvironment {
     private KlineCandle incomingCandle;
@@ -25,9 +24,6 @@ public class CandleEnvironment {
     private BigDecimal incomingCandleLow;
     private BigDecimal incomingCandleHigh;
     private BigDecimal quantityThreshold;
-    private boolean isNotFreezed; //to be deleted
-    private boolean isFreezed; // to be deleted
-    private boolean ordersNotCreated; // to be deleted
 
     // Constructor
     public CandleEnvironment(
@@ -53,24 +49,10 @@ public class CandleEnvironment {
         this.incomingCandleLow = incomingCandle.getLow();
         this.incomingCandleHigh = incomingCandle.getHigh();
         this.quantityThreshold = quantityThreshold;
-        this.isNotFreezed = ordersData.isNotFreezed(); //to be deleted
-        this.isFreezed = ordersData.isFreezed(); // to be deleted
-        this.ordersNotCreated = !ordersData.getParam(ORDERS_CREATED, false); // to be deleted
     }
 
     // Getters
     // Record-like Getters
-    public boolean ordersNotCreated() {
-        return ordersNotCreated;
-    }
-
-    public boolean isFreezed() {
-        return isFreezed;
-    }
-
-    public boolean isNotFreezed() {
-        return isNotFreezed;
-    }
 
     public KlineCandle incomingCandle() {
         return incomingCandle;

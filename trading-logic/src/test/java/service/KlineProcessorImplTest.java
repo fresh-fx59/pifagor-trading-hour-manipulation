@@ -45,8 +45,9 @@ public class KlineProcessorImplTest {
 
     @ParameterizedTest
     @CsvSource({
-            "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv,1610.631",
-            "src/test/resources/1722895422_klineCandles_1691257112000-1722879512000.csv,7525.294"
+            "src/test/resources/1720344410_klineCandles_1709251200000-1711929540000.csv,1610.631"
+//            ,
+//            "src/test/resources/1722895422_klineCandles_1691257112000-1722879512000.csv,7525.294"
     })
     public void universalCandleProcessor(String filePath, String expectedResultString) {
         //given

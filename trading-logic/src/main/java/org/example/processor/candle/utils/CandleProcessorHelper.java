@@ -94,32 +94,27 @@ public class CandleProcessorHelper {
     }
 
     public static boolean isOrderFreezed(CandleEnvironment ce) {
-        return ce.isNotFreezed()
-                && ce.isOrderData05Exists()
+        return ce.isOrderData05Exists()
                 && ce.isIncomingCanldeLowLowerOrEqualOrderData05();
     }
 
     public static boolean isOrderAmended(CandleEnvironment ce) {
-        return ce.isNotFreezed()
-                && ce.isOrderData05Exists()
+        return ce.isOrderData05Exists()
                 && ce.isFiba05GreaterOrdersData05();
     }
 
     public static boolean isOrderFilledStopLoss(CandleEnvironment ce) {
-        return ce.isFreezed()
-                && ce.isCandleLowLowerOrEqualOrder1();
+        return ce.isCandleLowLowerOrEqualOrder1();
     }
 
     public static boolean isOrderFilledTakeProfit(CandleEnvironment ce) {
-        return ce.isFreezed()
-                && ce.isIncomingCandleHighHigherOrEqualOrderData0382();
+        return ce.isIncomingCandleHighHigherOrEqualOrderData0382();
     }
 
     public static boolean shouldPlaceOrder(CandleEnvironment ce) {
-        return                         ce.isNotFreezed()
-                && ce.isMoreThan2HourCandles()
+        return  ce.isMoreThan2HourCandles()
 //                    && isLastMinuteOfHour(candlesTime)
 //                    && incomingCandle.getIsKlineClosed()
-                && ce.ordersNotCreated();
+                ;
     }
 }
