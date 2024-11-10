@@ -7,12 +7,15 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.example.model.enums.FibaLevel.*;
-import static org.example.service.UniversalKlineCandleProcessorImpl.ROUND_SIGN_PRICE;
 import static org.example.utils.OrderHelper.roundBigDecimalHalfUp;
 
-public record OrdersData(Map<FibaLevel, BigDecimal> fibaLevelsToCompare,
-                         Map<OrdersDataParams, Boolean> params,
-                         Order order) {
+public record OrdersData(
+        Map<FibaLevel, BigDecimal> fibaLevelsToCompare,
+        Map<OrdersDataParams, Boolean> params,
+        Order order
+) {
+    public final static int ROUND_SIGN_PRICE = 3;
+    public final static int ROUND_SIGN_QUANTITY = 3;
     /**
      * max prefix size 15
      */

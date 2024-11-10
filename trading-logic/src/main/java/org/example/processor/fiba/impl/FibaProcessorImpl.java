@@ -2,7 +2,7 @@ package org.example.processor.fiba.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.dao.FibaDAO;
-import org.example.exception.FibaProcessorIllegalStateException;
+import org.example.exception.StateMachineIllegalStateException;
 import org.example.model.*;
 import org.example.model.enums.FibaProcessorState;
 import org.example.processor.fiba.FibaProcessor;
@@ -77,7 +77,7 @@ public class FibaProcessorImpl implements FibaProcessor {
                 };
 
         if (!isNextStateAllowed)
-            throw new FibaProcessorIllegalStateException(
+            throw new StateMachineIllegalStateException(
                     String.format("State transition from %s to %s is not allowed", currentState, nextState));
 
         currentState = nextState;
@@ -90,7 +90,7 @@ public class FibaProcessorImpl implements FibaProcessor {
 
         if (!currentState.equals(nextState)
                 || (MORE_THAN_ONE_HOUR_CANDLE.equals(nextState) && !fiba0Previous.equals(fiba0Next))) {
-            log.info("""
+            log.trace("""
                             fiba state from {} to {}:
                             hour candles {}, hour of incoming candle {},
                             fiba data

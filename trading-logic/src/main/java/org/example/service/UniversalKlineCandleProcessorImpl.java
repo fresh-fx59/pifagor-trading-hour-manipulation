@@ -3,15 +3,17 @@ package org.example.service;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dao.FibaDAO;
 import org.example.dao.FibaDAOImpl;
-import org.example.enums.*;
+import org.example.enums.Profile;
+import org.example.enums.Ticker;
 import org.example.model.*;
 import org.example.model.enums.FibaLevel;
 import org.example.model.enums.OrdersDataParams;
+import org.example.processor.candle.CandleProcessor;
+import org.example.processor.candle.impl.CandleProcessorImpl;
 import org.example.processor.fiba.FibaProcessor;
 import org.example.processor.fiba.impl.FibaProcessorImpl;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,17 +21,15 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import static org.example.enums.LoadType.COLD_START;
-import static org.example.enums.OrderStatus.FILLED;
 import static org.example.enums.Profile.PROD;
 import static org.example.enums.TickerInterval.ONE_HOUR;
 import static org.example.enums.TickerInterval.ONE_MINUTE;
 import static org.example.model.FibaCandlesData.setZeroFibaPriceLevels;
-import static org.example.model.OrdersData.SLTP_PREFIX;
 import static org.example.model.enums.FibaLevel.*;
 import static org.example.model.enums.OrdersDataParams.ORDERS_CREATED;
+import static org.example.processor.candle.utils.CandleProcessorHelper.*;
 import static org.example.utils.KlineCandleHelper.isFirstMinuteOfHour;
 import static org.example.utils.KlineCandleHelper.isLastMinuteOfHour;
-import static org.example.utils.OrderHelper.*;
 
 /**
  * I should add false tolerance in case of
@@ -46,6 +46,8 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private final OrdersData ordersData;
     private final OrderService orderService;
     private final FibaProcessor fibaProcessor;
+    private final CandleProcessor candleProcessor;
+    private final BalanceService balanceService;
     private final BlockingQueue<KlineCandle> klineCandleQueue;
 
     private KlineCandle hourCandle;
@@ -53,8 +55,9 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
     private final BigDecimal quantityThreshold;
     private final Profile profile;
 
-    public final static int ROUND_SIGN_PRICE = 3;
-    public final static int ROUND_SIGN_QUANTITY = 3;
+    private final boolean useStateMachineForOrder = true;
+
+
 
     public UniversalKlineCandleProcessorImpl(BlockingQueue<KlineCandle> klineCandleQueue,
                                              BlockingQueue<OrderForQueue> orderQueue,
@@ -82,13 +85,17 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                 }},
                 new Order());
         this.balance = initialBalance;
+        this.balanceService = new BalanceServiceImpl(initialBalance);
         this.quantityThreshold = quantityThreshold;
         this.fibaProcessor = new FibaProcessorImpl(fibaDAO);
+        this.candleProcessor = new CandleProcessorImpl(this.orderService, this.balanceService);
         this.profile = profile;
     }
 
     @Override
     public BigDecimal getBalance() {
+        if (useStateMachineForOrder)
+            return balanceService.getBalance();
         return balance;
     }
 
@@ -105,7 +112,11 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             updateHourCandle(candle);
         }
         if (PROD.equals(profile) && !COLD_START.equals(candle.getLoadType()))
-            updateOrder(candle);
+            if (useStateMachineForOrder) {
+                candleProcessor.process(candle, hourCandle, fibaCandlesData, ordersData, quantityThreshold);
+            } else {
+                updateOrder(candle);
+            }
 
         if (hourCandle != null)
             fibaProcessor.process(candle, hourCandle, fibaCandlesData, ordersData);
@@ -160,10 +171,10 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
                     && !ordersData.getParam(ORDERS_CREATED, false)) {
 
                 Map<FibaLevel, BigDecimal> levelPrice = Map.of(THREEEIGHTTWO, fibaLevel0382, FIVE, fibaLevel05, ONE, fibaLevel1);
-                Order orderToBePlaced = prepareCreateOrder(ticker, levelPrice);
+                Order orderToBePlaced = prepareCreateOrder(ticker, levelPrice, quantityThreshold, balance);
                 Order createdOrder = orderService.createOrder(orderToBePlaced);
                 Map<OrdersDataParams, Boolean> params = Map.of(ORDERS_CREATED, true);
-                updateOrderData(createdOrder, levelPrice, params);
+                updateOrderData(createdOrder, levelPrice, params, ordersData);
 
                 log.info("order created " + createdOrder);
             } else if (ordersDataFibaLevel05 != null && fibaLevel05.compareTo(ordersDataFibaLevel05) > 0) {
@@ -175,23 +186,24 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
             } else if (ordersDataFibaLevel05 != null &&  candle.getLow().compareTo(ordersDataFibaLevel05) <= 0) {
                 ordersData.updateParams(Map.of(OrdersDataParams.FREEZED, true));
                 Order shouldBeFilledOrder = ordersData.order();
+                balance = updateBalance(shouldBeFilledOrder, balance);
                 log.info("position opened on candle {} customOrderId {} pnl = {}",
                         hourCandle.getOpenAt().getHour(),
                         shouldBeFilledOrder.getCustomOrderId(),
-                        updateBalance(shouldBeFilledOrder));
+                        balance);
                 log.info("order freezed. candle low = {}, fibaLevel05 = {}", candle.getLow(), ordersDataFibaLevel05);
             }
         } else {
             String orderId = ordersData.order().getCustomOrderId();
             if (candle.getHigh().compareTo(ordersDataFibaLevel0382) >= 0) {
-                increaseBalance(ordersData.order());
-                cleanUpIfOrderWasFilled();
+                balance = increaseBalance(ordersData.order(), balance);
+                cleanUpIfOrderWasFilled(orderService, ordersData);
                 log.info("position closed at hourCandle {} - take profit {} pnl = {} balance increased",
                         hourCandle.getOpenAt().getHour(), orderId, balance);
                 log.info("Candle data on closed position \n {}", candle);
             } else if (candle.getLow().compareTo(ordersDataFibaLevel1) <= 0) {
-                decreaseBalance(ordersData.order());
-                cleanUpIfOrderWasFilled();
+                balance = decreaseBalance(ordersData.order(), balance);
+                cleanUpIfOrderWasFilled(orderService, ordersData);
                 log.info("position closed at hourCandle {} - stop loss {} pnl = {} balance decreased",
                         hourCandle.getOpenAt().getHour(), orderId, balance);
                 log.info("Candle data on closed position \n {}", candle);
@@ -199,72 +211,11 @@ public class UniversalKlineCandleProcessorImpl implements KlineCandleProcessor, 
         }
     }
 
-    public void cleanUpIfOrderWasFilled() {
-        Order shouldBeFilledOrder = ordersData.order();
-        OrderStatus orderStatus = orderService.getOrderStatus(shouldBeFilledOrder);
-        if (FILLED.equals(orderStatus)) {
-            ordersData.cleanUp();
-        } else {
-            log.error("Order ID {} status = {}, but should be Filled",
-                    shouldBeFilledOrder.getOrderId(), orderStatus.getBybitStatus());
-        }
-    }
 
-    private void decreaseBalance(Order order) {
-        BigDecimal stopLossAmount = new BigDecimal(order.getStopLoss()).multiply(new BigDecimal(order.getQuantity()));
-        BigDecimal buyAmount = new BigDecimal(order.getPrice()).multiply(new BigDecimal(order.getQuantity()));
-        BigDecimal lostAmount = buyAmount.subtract(stopLossAmount);
-        balance = balance.add(buyAmount).subtract(lostAmount);
-    }
 
-    private void increaseBalance(Order order) {
-        BigDecimal takeProfitAmount = new BigDecimal(order.getTakeProfit()).multiply(new BigDecimal(order.getQuantity()));
-        balance = balance.add(takeProfitAmount);
-    }
 
-    private BigDecimal updateBalance(Order order) {
-        if (order.getOrderSide().equals(OrderSide.SELL)) {
-            balance = balance.add(new BigDecimal(order.getPrice()).multiply(new BigDecimal(order.getQuantity())));
-        } else {
-            balance = balance.subtract(new BigDecimal(order.getPrice()).multiply(new BigDecimal(order.getQuantity())));
-        }
-        return balance;
-    }
 
-    private Order prepareCreateOrder(Ticker ticker, Map<FibaLevel, BigDecimal> levelPrice) {
-        BigDecimal orderPrice = levelPrice.get(FIVE);
-        BigDecimal quantityWOThreshold = balance.divide(orderPrice, MathContext.DECIMAL32);
-        BigDecimal quantity = quantityWOThreshold
-                .subtract(quantityWOThreshold.multiply(quantityThreshold));
-        return Order.builder()
-                .category(OrderCategory.LINEAR)
-                .ticker(ticker)
-                .orderSide(OrderSide.BUY)
-                .type(OrderType.LIMIT)
-                .quantity(roundBigDecimalDown(quantity, ROUND_SIGN_QUANTITY))
-                .price(roundBigDecimalHalfUp(orderPrice, ROUND_SIGN_PRICE))
-                .takeProfit(roundBigDecimalHalfUp(levelPrice.get(THREEEIGHTTWO), ROUND_SIGN_PRICE))
-                .stopLoss(roundBigDecimalHalfUp(levelPrice.get(ONE), ROUND_SIGN_PRICE))
-                .customOrderId(SLTP_PREFIX + generateUUID21())
-                .build();
-    }
 
-    /**
-     * Generate UUID for orderLinkId(36 symbols max)
-     * @return UUID
-     */
-    public static String generateUUID21() {
-        return generateUUID(21);
-    }
-
-    private void updateOrderData(Order order,
-                                  Map<FibaLevel, BigDecimal> levelPrice,
-                                  Map<OrdersDataParams, Boolean> params) {
-
-        ordersData.updateFibaLevelsToCompare(levelPrice);
-        ordersData.copyOrder(order);
-        ordersData.updateParams(params);
-    }
 
     /**
      * Open hour candle, close or update.
