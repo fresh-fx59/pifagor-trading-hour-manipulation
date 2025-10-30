@@ -1,0 +1,26 @@
+<clickhouse>
+    <users>
+        <heroku_tamako>
+            <profile>default</profile>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <!--https://clickhouse.com/docs/en/operations/settings/settings-users
+            PASSWORD=$(base64 < /dev/urandom | head -c20); echo "$PASSWORD"; echo -n "$PASSWORD" | sha256sum | tr -d '-'-->
+            <password_sha256_hex>ce88036cfb65be3cd1edacec1c9b0783162202bcf35eb4717c831da912c1ce8a</password_sha256_hex>
+            <quota>default</quota>
+        </heroku_tamako>
+    </users>
+
+    <profiles>
+        <default>
+            <!-- Default profile settings -->
+        </default>
+    </profiles>
+
+    <quotas>
+        <default>
+            <!-- Default quota settings -->
+        </default>
+    </quotas>
+</clickhouse>

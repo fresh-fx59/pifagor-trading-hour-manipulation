@@ -1,5 +1,7 @@
 package config;
 
+import org.example.config.ConfigLoader;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
@@ -12,8 +14,8 @@ import java.security.cert.CertificateException;
 
 public class SslConfig {
     public static SSLContext getSslContext() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException {
-        final String keystorePath = "/Users/a/Documents/projects/keystore/keystore.jks";
-        final String keystorePassword = "123456";
+        final String keystorePath = ConfigLoader.getRequiredEnv("WS_KEYSTORE_PATH");
+        final String keystorePassword = ConfigLoader.getRequiredEnv("WS_KEYSTORE_PASSWORD");
 
         KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());

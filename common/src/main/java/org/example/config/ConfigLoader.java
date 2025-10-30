@@ -29,6 +29,36 @@ public class ConfigLoader {
     }
 
     /**
+     * Get environment variable directly with validation.
+     * Throws IllegalStateException with clear message if variable is not set.
+     *
+     * @param varName environment variable name
+     * @return environment variable value
+     * @throws IllegalStateException if environment variable is not set
+     */
+    public static String getRequiredEnv(String varName) {
+        String value = System.getenv(varName);
+        if (value == null || value.isEmpty()) {
+            throw new IllegalStateException(
+                    String.format("Required environment variable '%s' is not set. Please configure it in your .env file or system environment.", varName)
+            );
+        }
+        return value;
+    }
+
+    /**
+     * Get environment variable with default value.
+     *
+     * @param varName environment variable name
+     * @param defaultValue default value if not set
+     * @return environment variable value or default
+     */
+    public static String getEnvOrDefault(String varName, String defaultValue) {
+        String value = System.getenv(varName);
+        return (value == null || value.isEmpty()) ? defaultValue : value;
+    }
+
+    /**
      * Returns input string with environment variable references expanded e.g. ${SOME_VAR}
      * <a href="https://stackoverflow.com/a/9725352/2266229">stack overflow</a>
      * @param input property value

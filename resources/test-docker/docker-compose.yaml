@@ -1,0 +1,44 @@
+version: '3.8'
+name: pifagor-trading-hour-manipulation
+services:
+  pthm-clickhouse-server-test:
+    image: 'myclickhouse-server:24.8.5.115-alpine'
+    user: 'jenkins:jenkins'
+    container_name: pthm-clickhouse-server-test
+    hostname: pthm-clickhouse-server-test
+    cap_add:
+      - SYS_NICE
+      - NET_ADMIN
+      - IPC_LOCK
+    volumes:
+      ## initial scripts
+      - /home/jenkins/docker/clickhouse/test/docker-share/init:/docker-entrypoint-initdb.d/
+      ## clickshouse server data
+      - clickhouse-server-data-test:/var/lib/clickhouse
+      ## clcikhouse server logs
+      - clickhouse-server-log-test:/var/log/clickhouse-server
+      ## clickhouse server config
+      - /home/jenkins/docker/clickhouse/server/test/docker-share/conf/config.xml:/etc/clickhouse-server/config.d/config.xml
+      ## clickhosue server users
+      - /home/jenkins/docker/clickhouse/server/test/docker-share/conf/users.xml:/etc/clickhouse-server/users.d/users.xml
+    ports:
+      - '8125:8123'
+      - '127.0.0.1:9004:9000'
+    depends_on:
+      - pthm-clickhouse-keeper-test
+  pthm-clickhouse-keeper-test:
+    image: 'myclickhouse-keeper:24.8.5.115-alpine'
+    user: 'jenkins:jenkins'
+    container_name: pthm-clickhouse-keeper-test
+    hostname: pthm-clickhouse-keeper-test
+    volumes:
+      - /home/jenkins/docker/clickhouse/keeper/test/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+    ports:
+      - '127.0.0.1:9185:9181'
+volumes:
+  clickhouse-server-data-test:
+    external: true
+    name: clickhouse-server-data-test
+  clickhouse-server-log-test:
+    external: true
+    name: clickhouse-server-log-test

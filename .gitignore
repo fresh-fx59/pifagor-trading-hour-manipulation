@@ -29,3 +29,24 @@ replay_pid*
 target/
 target/*
 /.idea/
+
+# Environment files with secrets
+.env
+
+# Private keys and certificates (except example/template files)
+*.pem
+*.key
+*.p12
+*.jks
+!*.example.*
+
+# IDE specific files
+.vscode/
+*.iml
+
+# Security documentation (may contain sensitive info about infrastructure)
+SECURITY_FIXES.md
+
+# Large SQL data files (use Git LFS if needed)
+**/universal_kline_candle*.sql
+**/*-from-prod.sql
