@@ -22,7 +22,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <clickhouse.version>0.6.0</clickhouse.version>
-        <lz4.version>1.8.0</lz4.version>
+        <lz4.version>1.10.0</lz4.version>
         <httpclient5.version>5.2.3</httpclient5.version>
     </properties>
 
@@ -38,7 +38,7 @@
             <version>${clickhouse.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.lz4</groupId>
+            <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
             <version>${lz4.version}</version>
         </dependency>
@@ -65,7 +65,7 @@
                 <version>${flyway.version}</version>
                 <configuration>
                     <url>${flyway.url}</url>
-                    <user>${flyway.user}</user>
+                    <appUser>${flyway.user}</appUser>
                     <password>${flyway.password}</password>
                     <locations>${flyway.locations}</locations>
                 </configuration>

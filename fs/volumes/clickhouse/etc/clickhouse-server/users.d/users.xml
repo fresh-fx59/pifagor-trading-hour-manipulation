@@ -1,6 +1,6 @@
 <clickhouse>
     <users>
-        <!-- Default user configuration -->
+        <!-- Default appUser configuration -->
         <default>
             <password></password>
             <networks>

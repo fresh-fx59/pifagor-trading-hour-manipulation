@@ -10,20 +10,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.service.JpaUserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -67,6 +63,12 @@ public class SecurityConfig {
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
                 .userDetailsService(userDetailsService)
                 .httpBasic(Customizer.withDefaults())
+                .logout(logout -> logout.clearAuthentication(true)
+                        .invalidateHttpSession(true)
+                        //https://www.youtube.com/watch?v=_2e7nfgH-u8
+                        //https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbnN6Skt0TmM5bXhINVJ6cTFkQUo3RHQ1b1BEQXxBQ3Jtc0tuUndDTmtMQmJ6cW9ZZlVMdjNEVFNrWmNzaFhSTk16c2ZCeTFkOXhUMzJONVBNNE1vcTY5RThGZTR5NEVnWlhDQjh4TVFJVVBoSWlWVU1ISExEM1ExaUlxRHhsdEJwRjFGM0h3VV9rR2NPM2dXNWxVZw&q=https%3A%2F%2Fgithub.com%2Fsivaprasadreddy%2Fspring-boot-microservices-course&v=_2e7nfgH-u8
+                //        .logoutSuccessHandler(oidcLogoutSuccessHandler())
+                )
                 .build();
     }
 

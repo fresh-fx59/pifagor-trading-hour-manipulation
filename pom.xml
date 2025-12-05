@@ -25,6 +25,9 @@
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.26.0</assertj.version>
         <mockito.version>5.12.0</mockito.version>
+
+        <spring.version>3.4.1</spring.version>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
     </properties>
 
     <modules>
@@ -39,7 +42,31 @@
         <module>csv-processor</module>
         <module>bybit-data-grabber</module>
         <module>websocket-server-jakarta</module>
+        <module>old-user-auth</module>
+        <module>postgres-auth-flyway</module>
+        <module>old-user-exchange-token</module>
+        <module>postgres-token-flyway</module>
     </modules>
+
+    <dependencyManagement>
+        <!-- Spring Boot dependencies -->
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>${spring.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
