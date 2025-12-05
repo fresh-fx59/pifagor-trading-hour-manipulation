@@ -25,7 +25,7 @@
         <assertj.version>3.26.0</assertj.version>
 
         <clickhouse.version>0.6.0</clickhouse.version>
-        <lz4.version>1.10.0</lz4.version>
+        <lz4.version>1.10.1</lz4.version>
         <httpclient5.version>5.2.3</httpclient5.version>
 
         <websocket.version>1.5.3</websocket.version>
